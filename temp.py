@@ -1,61 +1,202 @@
+import numpy as np
 import pandas as pd
-day = 23
-future_day = 7
+import datetime
 
-total_activity_log = pd.read_csv('./data/kwai/processed_data/total_activity_log.csv')
-register = pd.read_csv('./data/kwai/processed_data/kwai_user_info.csv')
-# step 1 - Saving 'user_id' field for subsequent action.
-# reg_user_id: ['user_id']
-reg_user_id = register.copy()
-reg_user_id = reg_user_id.drop(['register_type', 'device_type'], axis=1)
-# Step 2 - Count and save user activities from 1 to 'day', if there is no activity record, it will be regarded as 0.
-action_type_dict = [0, 1, 2, 3, 4, 5]
-for i in range(1, 2):
-    temporary_log_file = total_activity_log.copy()
-    temporary_log_file = temporary_log_file[temporary_log_file['act_day'] == i]
-    temporary_log_file.rename(columns={'act_day': 'day_id'}, inplace=True)
-    day_log = temporary_log_file.groupby('user_id').agg({'act_type': 'count'})
-    day_log.rename(columns={'act_type': 'all#num'}, inplace=True)
-    for a in action_type_dict:
-        action_ = (temporary_log_file['act_type'] == a)
-        temporary_log_file[str(a) + '#num'] = action_
-        action_num = temporary_log_file.groupby('user_id').sum(numeric_only=True)[[str(a) + '#num']]
-        day_log = pd.merge(day_log, action_num, left_index=True, right_index=True)
-    del temporary_log_file
-    day_log = pd.merge(day_log, register, how='right', on='user_id')
-    # Fill NAN as 0
-    day_log = day_log.fillna(0)
-    day_log.insert(loc=1, column='day_id', value=i)
-    day_log.to_csv('./data/kwai/processed_data/' + 'day_' + str(i) + '_activity_log.csv', index=False)
-    print('Day ' + str(i) + ' activity log is created successfully')
-    del day_log
+feature = {
+    'act_feat': ['0#num', '1#num', '2#num', '3#num', '4#num', '5#num'],
+    'user_image_feat': ['register_type', 'device_type'],
+    'day_act_tag': [],
+    'id_name': ['user_id'],
+    'truth_tag': ['truth', 'total_activity_day'],
+    'feat_num': 6,
+}
+params = {}
 
-# Step 3 - Add truth information, 1 means active, 0 means inactive.
-future_day_activity_log = total_activity_log.copy()
-future_day_activity_log = future_day_activity_log[(day + 1 <= future_day_activity_log['act_day']) & (future_day_activity_log['act_day'] <= day + 1 + future_day)]
-truth = future_day_activity_log.groupby('user_id').count()[['act_type']]
-truth[truth.act_type > 0] = 1
-truth.columns = ['truth']
-# user_truth: ['user_id', 'truth']
-user_truth = pd.merge(reg_user_id, truth, how='left', on='user_id')
-# Fill NAN as 0
-user_truth['truth'] = user_truth['truth'].fillna(0)
-# register: ['user_id', 'register_type', 'device_type', 'truth']
-register = pd.merge(register, user_truth, how='inner', on='user_id')
-print('User add truth information over')
+df_u = pd.DataFrame()
+df_a = pd.DataFrame()
+df_id = pd.DataFrame()
+past_day = 4
+future_day = 26
+data_name = 'kwai'
+feature_file_path = './data/kwai/processed_data/feature/'
+label_file_path = './data/kwai/processed_data/info/'
+time_file_path = './data/kwai/processed_data/info/'
+for i in range(1, past_day + future_day + 1):
+    day = 'day' + str(i)
+    for j in range(1, feature['feat_num'] + 1):
+        day_num = day + '_' + str(j)
+        feature['day_act_tag'].append(day_num)
 
-# Step 4 - Add whether the 'future_day' day is active or not
-# register: ['user_id', 'register_type', 'device_type', 'truth', 'first_day', 'second_day', ..., 'future_day']
-for i in range(day + 1, day + future_day + 1):
-    temporary_log_file = total_activity_log.copy()
-    temporary_log_file = temporary_log_file[temporary_log_file['act_day'] == i]
-    future_truth = temporary_log_file.groupby('user_id').count()[['act_type']]
-    del temporary_log_file
-    future_truth[future_truth.act_type > 0] = 1
-    future_truth.columns = ['day' + str(i - day)]
-    user_future_truth = pd.merge(reg_user_id, future_truth, how='left', on='user_id')
-    del future_truth
-    user_future_truth['day' + str(i - day)] = user_future_truth['day' + str(i - day)].fillna(0)
-    register = pd.merge(register, user_future_truth, how='inner', on='user_id')
-    del user_future_truth
-print('Kwai user info add ' + str(day + 1) + ' to ' + str(day + 1 + future_day + 1) + ' activity over')
+for i in range(1, past_day + 1):
+    file_name = 'day_' + str(i) + '_activity_feature.csv'
+    df = pd.read_csv(feature_file_path + file_name)
+    temp_df_id = df[feature['id_name']]
+    df_id = pd.concat([df_id, temp_df_id])
+    df_id.drop_duplicates(subset=feature['id_name'], inplace=True)
+
+for i in range(1, past_day + 1):
+    file_name = 'day_' + str(i) + '_activity_feature.csv'
+    df = pd.read_csv(feature_file_path + file_name)
+    temp_df_u = df[feature['id_name'] + feature['user_image_feat']]
+    temp_df_a = df[feature['id_name'] + feature['act_feat']]
+    temp_df_a = pd.merge(df_id, temp_df_a, on=feature['id_name'], how='left')
+    temp_df_a = temp_df_a.fillna(0)
+    df_u = pd.concat([df_u, temp_df_u])
+    df_u.drop_duplicates(subset=feature['id_name'], inplace=True)
+    df_a = pd.concat([df_a, temp_df_a])
+
+label_1 = pd.read_csv(label_file_path + data_name + '_act_statistics.csv')
+label_1 = label_1[feature['id_name'] + feature['day_act_tag']]
+label_2 = pd.read_csv(label_file_path + data_name + '_user_info.csv')
+label_2 = label_2[feature['id_name'] + feature['truth_tag']]
+label = pd.merge(df_id, label_1, on=feature['id_name'], how='left')
+label = pd.merge(label, label_2, on=feature['id_name'], how='left')
+
+file_name = data_name + '_time.csv'
+df_time = pd.read_csv(time_file_path + file_name)
+df_time = pd.merge(df_id, df_time, on=feature['id_name'], how='left')
+df_time.sort_values(feature['id_name'], inplace=True)
+del df_time[feature['id_name'][0]]
+df_time_split = pd.DataFrame()
+for i in range(1, past_day + future_day + 1):
+    df_time_split['year' + str(i)] = pd.to_datetime(df_time["day" + str(i)]).dt.year
+    df_time_split['month' + str(i)] = pd.to_datetime(df_time["day" + str(i)]).dt.month
+    df_time_split['day' + str(i)] = pd.to_datetime(df_time["day" + str(i)]).dt.day
+    df_time_split['week' + str(i)] = df_time["week" + str(i)]
+
+# print(df_a)
+"""
+       user_id     0#num     1#num     2#num      3#num     4#num     5#num
+0       744025  1.938814  0.911943 -0.054015  -0.033281  0.000000 -0.005168
+1      1270299  3.033775 -0.057995 -0.054015  15.211075  0.000000 -0.005168
+2       571220  0.374584 -0.057995 -0.054015  -0.033281  0.000000 -0.005168
+3      1308501  2.408083 -0.057995 -0.054015  -0.033281  0.000000 -0.005168
+4       745554  0.113879 -0.057995 -0.054015  -0.033281  0.000000 -0.005168
+...        ...       ...       ...       ...        ...       ...       ...
+37441   845775 -0.140228 -0.073824 -0.069553  -0.042746 -0.005168 -0.012059
+37442  1050025 -0.140228 -0.073824 -0.069553  -0.042746 -0.005168 -0.012059
+37443   990897 -0.140228 -0.073824 -0.069553  -0.042746 -0.005168 -0.012059
+37444   126272 -0.140228 -0.073824 -0.069553  -0.042746 -0.005168 -0.012059
+37445   265870 -0.140228 -0.073824 -0.069553  -0.042746 -0.005168 -0.012059
+[149784 rows x 7 columns]
+"""
+# print(df_u)
+"""
+       user_id  register_type  device_type
+0       744025              1          283
+1      1270299              1          259
+2       571220              1            2
+3      1308501              0           23
+4       745554              2            0
+...        ...            ...          ...
+37441   845775              1          555
+37442  1050025              1          904
+37443   990897              0           60
+37444   126272              1          322
+37445   265870              0           22
+[37446 rows x 3 columns]
+"""
+# print(label)
+"""
+       user_id  day1_1  day1_2  ...  day30_6  truth  total_activity_day
+0       744025    39.0     1.0  ...      0.0    0.0                 0.0
+1      1270299    60.0     0.0  ...      0.0    0.0                 0.0
+2       571220     9.0     0.0  ...      0.0    1.0                 5.0
+3      1308501    48.0     0.0  ...      0.0    1.0                 2.0
+4       745554     4.0     0.0  ...      0.0    1.0                 1.0
+...        ...     ...     ...  ...      ...    ...                 ...
+37441   845775     0.0     0.0  ...      0.0    0.0                 0.0
+37442  1050025     0.0     0.0  ...      0.0    0.0                 0.0
+37443   990897     0.0     0.0  ...      0.0    1.0                 5.0
+37444   126272     0.0     0.0  ...      0.0    1.0                 7.0
+37445   265870     0.0     0.0  ...      0.0    1.0                 1.0
+[37446 rows x 183 columns]
+"""
+# print(df_time_split)
+"""
+       year1  month1  day1  week1  ...  year30  month30  day30  week30
+14722   2023       4     1      6  ...    2023        4     30       7
+5981    2023       4     1      6  ...    2023        4     30       7
+21624   2023       4     1      6  ...    2023        4     30       7
+17301   2023       4     1      6  ...    2023        4     30       7
+24850   2023       4     1      6  ...    2023        4     30       7
+...      ...     ...   ...    ...  ...     ...      ...    ...     ...
+36545   2023       4     1      6  ...    2023        4     30       7
+16590   2023       4     1      6  ...    2023        4     30       7
+29245   2023       4     1      6  ...    2023        4     30       7
+12060   2023       4     1      6  ...    2023        4     30       7
+35424   2023       4     1      6  ...    2023        4     30       7
+[37446 rows x 120 columns]
+"""
+
+
+def dataparse(df_u):
+    all_data = df_u
+    # feature dimension
+    feat_dim = 0
+    feat_dict = dict()
+    for f in feature['user_image_feat']:
+        cat_val = all_data[f].unique()
+        # Packed into a dictionary, such as {0:0, 1:1, 2:2}, feat_dam is cumulative
+        feat_dict[f] = dict(zip(cat_val, range(feat_dim, len(cat_val) + feat_dim)))
+        feat_dim += len(cat_val)
+
+    u_data_index = all_data.copy()
+    data_value = all_data.copy()
+    for f in all_data.columns:
+        if f in feature['user_image_feat']:
+            u_data_index[f] = u_data_index[f].map(feat_dict[f])
+            data_value[f] = 1.
+        else:
+            u_data_index.drop(f, axis=1, inplace=True)
+            data_value.drop(f, axis=1, inplace=True)
+
+    return feat_dim, u_data_index, data_value
+
+
+u_feat_dim, u_data_index, u_data_value = dataparse(df_u)
+
+ui = np.asarray(u_data_index.loc[df_u.index], dtype=int)
+uv = np.asarray(u_data_value.loc[df_u.index], dtype=np.float32)
+params["u_feat_size"] = u_feat_dim
+params["u_field_size"] = len(ui[0])
+ai = np.asarray([range(len(feature['act_feat'])) for x in range(len(df_a))], dtype=int)
+av = np.asarray(df_a[feature['act_feat']], dtype=np.float32)
+params["a_feat_size"] = len(av[0])
+params["a_field_size"] = len(ai[0])
+time_npy = np.asarray(df_time_split, dtype=np.float32)
+time_npy = time_npy.reshape((-1, past_day + future_day, 4))
+y = np.asarray(label[feature['day_act_tag'] + feature['truth_tag']], dtype=np.float32)
+
+# print(ui.shape)
+# print(uv.shape)
+# print(ai.shape)
+# print(av.shape)
+# print(y.shape)
+# print(time_npy.shape)
+"""
+(37446, 2)
+(37446, 2)
+(149784, 6)
+(149784, 6)
+(37446, 182)
+(37446, 30, 4)
+"""
+
+
+def user_activate_day_count(future_day, label):
+    day_list = []
+    for i in range(0, future_day + 1):
+        cur_day_count = (label['total_activity_day'] == i).sum()
+        day_list.append(cur_day_count)
+    day_numpy = np.array(day_list)
+    return day_numpy
+
+
+data_num = len(y)
+indices = np.arange(data_num)
+split_1 = int(0.6 * data_num)
+label = label.iloc[indices[:split_1]]
+day_numpy = user_activate_day_count(future_day, label)
+
+print(params["u_field_size"])

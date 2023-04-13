@@ -1,8 +1,9 @@
 import pandas as pd
+import datetime
 from sklearn import preprocessing
 
 """
-extraction_data() function's Purpose:
+extraction_data() function's purpose:
     1 - Filter the users who are 'day' before the number of registration days and save it as kwai_user_info.csv.
     2 - Obtain all activity information of users who registered in the previous 'day' and save it as all_activity_log.csv.
 """
@@ -31,7 +32,7 @@ def extraction_data(activity_log_file_path, register_file_path, file_path, day):
 
 
 """
-preprocess_data() function's Purpose:
+preprocess_data() function's purpose:
     1 - Count the actions of each registered user between 1 ~ day.
     2 - Determine whether each registered user is active within the future future_day、
      whether it is active every day in the future and the active rate.
@@ -115,7 +116,10 @@ def preprocess_data(total_activity_log_file_path, kwai_user_info_file_path, file
     register.to_csv(file_path + 'info/kwai_user_info.csv', index=False)
 
 
-""" standardscaler() function's Purpose: For standardization """
+"""
+standardscaler() function's purpose: 
+    1 - For standardization. 
+"""
 def standardscaler(file_path, days):
     scaler = preprocessing.StandardScaler()
     action_feats = ['all#num', '0#num', '1#num', '2#num', '3#num', '4#num', '5#num']
@@ -129,22 +133,42 @@ def standardscaler(file_path, days):
         print('Day ' + str(i) + ' activity feature is created successfully')
 
 
+"""
+create_date_info() function's purpose:
+    1 - Assign activity logs to time information.
+"""
+def create_date_info(file_path, save_path, day, future_day):
+    df = pd.read_csv(file_path)
+    data = df[['user_id']]
+    data['day1'] = datetime.datetime.strptime('2023-04-01', '%Y-%m-%d').date()
+    data['week1'] = datetime.datetime.strptime('2023-04-01', '%Y-%m-%d').date().isoweekday()
+    for i in range(day + 1, day + future_day):
+        data['day' + str(i + 1 - day)] = ''
+        data['week' + str(i + 1 - day)] = ''
+        date = data.iloc[0][1] + datetime.timedelta(days=i)
+        data['day' + str(i + 1 - day)] = date
+        data['week' + str(i + 1 - day)] = date.isoweekday()
+    data.to_csv(save_path + 'info/kwai_time.csv', index=False)
+
+
 def create_file_by_data(day, future_day, dilution_ratio=1.0):
     # Source files path
-    activity_log_file_path = '../data/kwai/source_data/user_activity_log.txt'
-    register_file_path = '../data/kwai/source_data/user_register_log.txt'
+    activity_log_file_path = './data/kwai/source_data/user_activity_log.txt'
+    register_file_path = './data/kwai/source_data/user_register_log.txt'
 
     # Activity logs and user info file path
-    total_activity_log_file_path = '../data/kwai/processed_data/log/total_activity_log.csv'
-    kwai_user_info_file_path = '../data/kwai/processed_data/info/kwai_user_info.csv'
+    total_activity_log_file_path = './data/kwai/processed_data/log/total_activity_log.csv'
+    kwai_user_info_file_path = './data/kwai/processed_data/info/kwai_user_info.csv'
 
     # Kwai data file path
-    file_path = '../data/kwai/processed_data/'
+    file_path = './data/kwai/processed_data/'
 
     extraction_data(activity_log_file_path, register_file_path, file_path, day)
     preprocess_data(total_activity_log_file_path, kwai_user_info_file_path, file_path, day, future_day)
     standardscaler(file_path, day)
+    create_date_info(kwai_user_info_file_path, file_path, 0, day + future_day)
 
 
 if __name__ == '__main__':
+    create_file_by_data(30, 0)
     create_file_by_data(23, 7)
