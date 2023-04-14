@@ -69,13 +69,13 @@ def load_data(past_day, future_day, data_name, data_dilution_ratio):
     label_file_path = ''
     time_file_path = ''
     if data_name == 'kwai':
-        feature_file_path = '../data/kwai/processed_data/feature/'
-        label_file_path = '../data/kwai/processed_data/info/'
-        time_file_path = '../data/kwai/processed_data/info/'
+        feature_file_path = './data/kwai/processed_data/feature/'
+        label_file_path = './data/kwai/processed_data/info/'
+        time_file_path = './data/kwai/processed_data/info/'
     elif data_name == 'kddcup2015':
-        feature_file_path = '../data/kddcup2015/processed_data/feature/'
-        label_file_path = '../data/kddcup2015/processed_data/info/'
-        time_file_path = '../data/kddcup2015/processed_data/info'
+        feature_file_path = './data/kddcup2015/processed_data/feature/'
+        label_file_path = './data/kddcup2015/processed_data/info/'
+        time_file_path = './data/kddcup2015/processed_data/info'
 
     # Get unique user id between 1 ~ past_day.
     for i in range(1, past_day + 1):
@@ -202,7 +202,7 @@ class DataSet(Dataset):
         return self.len
 
 
-def get_data_loader(batch_size=32, params={}, data_name='kwai'):
+def get_data_loader(batch_size=64, params={}, data_name='kwai'):
     past_day = params['day']
     future_day = params['future_day']
     data_dilution_ratio = params['data_dilution_ratio']
@@ -210,7 +210,7 @@ def get_data_loader(batch_size=32, params={}, data_name='kwai'):
                  'ui_valid', 'uv_valid', 'ai_valid', 'av_valid', 'y_valid', 'time_valid',
                  'ui_test', 'uv_test', 'ai_test', 'av_test', 'y_test', 'time_test',
                  'day_numpy', 'params']
-    save_path = '../data/' + data_name + '/model_input_data/'
+    save_path = './data/' + data_name + '/model_input_data/'
     # For example: _23_7_1_0.1
     save_name = '_' + str(past_day) + '_' + str(future_day) + '_' + str(params['seed']) + '_' + str(data_dilution_ratio)
     # For example: ./data/kwai/model_input_data/ui_train_23_7_1_0.1.pt
@@ -239,7 +239,8 @@ def get_data_loader(batch_size=32, params={}, data_name='kwai'):
         day_numpy = np.load(save_path + data_dict[18] + save_name + '.npy')
         params_load = np.load(save_path + data_dict[19] + save_name + '.npy', allow_pickle=True).item()
 
-        params = params_load.update(params)
+        params_load.update(params)
+        params = params_load
         print("Model input data loaded")
     else:
         create_feature_tag(past_day, future_day, data_name)
@@ -259,9 +260,13 @@ def get_data_loader(batch_size=32, params={}, data_name='kwai'):
         av = np.asarray(df_a[feature['act_feat']], dtype=np.float32)
         params['a_feat_size'] = len(av[0])
         params['a_field_size'] = len(ai[0])
+        # av、ai: [data_num, day, action_feature_num]
+        av = av.reshape((-1, params['day'], len(feature['act_feat'])))
+        ai = ai.reshape((-1, params['day'], len(feature['act_feat'])))
+        params['act_feat_num'] = feature['act_feat_num']
         time_npy = np.asarray(time_split, dtype=np.float32)
         time_npy = time_npy.reshape((-1, past_day + future_day, 4))
-        y = np.asarray(label[feature['day_act_tag'] + feature['truth_tag']], dtype=np.float32)
+        y = np.asarray(label[feature['truth_tag'] + feature['day_act_tag']], dtype=np.float32)
 
         # np.save(save_path + 'av' + save_name + '.npy', av)
         # np.save(save_path + 'y' + save_name + '.npy', y)
@@ -321,19 +326,19 @@ def get_data_loader(batch_size=32, params={}, data_name='kwai'):
         np.save(save_path + data_dict[19] + save_name+ '.npy', params)
         print('The model input data is saved')
 
-        # packaged dataset
-        # ui_train: [user_num , user_image_type]
-        # ai_train_: [user_num , past_day , action_type]
-        # time_train: [user_num ,past_day + future_day]
-        # y: [user_num,truth + total_activity_day + day1_1...dayN_feature_num  ]
-        train_dataset = DataSet(ui_train, uv_train, ai_train, av_train, y_train, time_train)
-        valid_dataset = DataSet(ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
-        test_dataset = DataSet(ui_test, uv_test, ai_test, av_test, y_test, time_test)
-        train_set = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
-        valid_set = DataLoader(valid_dataset, batch_size=batch_size, drop_last=True)
-        test_set = DataLoader(test_dataset, batch_size=batch_size, drop_last=True)
+    # packaged dataset
+    # ui_train、uv_train: [user_num, user_image_feature_num]
+    # ai_train、av_train: [user_num, past_day, action_feature_num]
+    # time_train: [user_num, past_day + future_day, 4]
+    # y: [user_num, truth + total_activity_day + day1_1 + ... + dayN_feature_num]
+    train_dataset = DataSet(ui_train, uv_train, ai_train, av_train, y_train, time_train)
+    valid_dataset = DataSet(ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
+    test_dataset = DataSet(ui_test, uv_test, ai_test, av_test, y_test, time_test)
+    train_set = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    valid_set = DataLoader(valid_dataset, batch_size=batch_size, drop_last=True)
+    test_set = DataLoader(test_dataset, batch_size=batch_size, drop_last=True)
 
-        return train_set, valid_set, test_set, day_numpy, params
+    return train_set, valid_set, test_set, day_numpy, params
 
 
 if __name__ == '__main__':

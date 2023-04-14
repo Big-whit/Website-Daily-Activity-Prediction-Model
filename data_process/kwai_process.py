@@ -170,5 +170,6 @@ def create_file_by_data(day, future_day, dilution_ratio=1.0):
 
 
 if __name__ == '__main__':
-    create_file_by_data(30, 0)
-    create_file_by_data(23, 7)
+    pass
+    # create_file_by_data(30, 0)
+    # create_file_by_data(23, 7)

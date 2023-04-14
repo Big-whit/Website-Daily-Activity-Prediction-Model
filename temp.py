@@ -2,12 +2,17 @@ import numpy as np
 import pandas as pd
 import datetime
 
+import torch
+from torch.utils.data import DataLoader
+
+from dataloader.load_data import DataSet
+
 feature = {
     'act_feat': ['0#num', '1#num', '2#num', '3#num', '4#num', '5#num'],
     'user_image_feat': ['register_type', 'device_type'],
     'day_act_tag': [],
     'id_name': ['user_id'],
-    'truth_tag': ['truth', 'total_activity_day'],
+    'truth_tag': ['truth_rate', 'total_activity_day'],
     'feat_num': 6,
 }
 params = {}
@@ -18,6 +23,7 @@ df_id = pd.DataFrame()
 past_day = 4
 future_day = 26
 data_name = 'kwai'
+batch_size = 32
 feature_file_path = './data/kwai/processed_data/feature/'
 label_file_path = './data/kwai/processed_data/info/'
 time_file_path = './data/kwai/processed_data/info/'
@@ -164,9 +170,12 @@ ai = np.asarray([range(len(feature['act_feat'])) for x in range(len(df_a))], dty
 av = np.asarray(df_a[feature['act_feat']], dtype=np.float32)
 params["a_feat_size"] = len(av[0])
 params["a_field_size"] = len(ai[0])
+av = av.reshape((-1, past_day, len(feature['act_feat'])))
+ai = ai.reshape((-1, past_day, len(feature['act_feat'])))
+params['act_feat_num'] = len(feature['act_feat'])
 time_npy = np.asarray(df_time_split, dtype=np.float32)
 time_npy = time_npy.reshape((-1, past_day + future_day, 4))
-y = np.asarray(label[feature['day_act_tag'] + feature['truth_tag']], dtype=np.float32)
+y = np.asarray(label[feature['truth_tag'] + feature['day_act_tag']], dtype=np.float32)
 
 # print(ui.shape)
 # print(uv.shape)
@@ -193,10 +202,111 @@ def user_activate_day_count(future_day, label):
     return day_numpy
 
 
+ui = torch.tensor(ui)
+uv = torch.tensor(uv)
+ai = torch.tensor(ai)
+av = torch.tensor(av)
+time = torch.tensor(time_npy)
+y = torch.tensor(y)
+
 data_num = len(y)
 indices = np.arange(data_num)
+np.random.seed(1)
+np.random.shuffle(indices)
 split_1 = int(0.6 * data_num)
-label = label.iloc[indices[:split_1]]
-day_numpy = user_activate_day_count(future_day, label)
+split_2 = int(0.8 * data_num)
+ui_train, ui_valid, ui_test = ui[indices[:split_1]], ui[indices[split_1:split_2]], ui[indices[split_2:]]
+uv_train, uv_valid, uv_test = uv[indices[:split_1]], uv[indices[split_1:split_2]], uv[indices[split_2:]]
+ai_train, ai_valid, ai_test = ai[indices[:split_1]], ai[indices[split_1:split_2]], ai[indices[split_2:]]
+av_train, av_valid, av_test = av[indices[:split_1]], av[indices[split_1:split_2]], av[indices[split_2:]]
+time_train, time_valid, time_test = time[indices[:split_1]], time[indices[split_1:split_2]], \
+                                    time[indices[split_2:]]
+y_train, y_valid, y_test = y[indices[:split_1]], y[indices[split_1:split_2]], y[indices[split_2:]]
 
-print(params["u_field_size"])
+# print(ui_train.shape)
+# print(uv_train.shape)
+# print(ai_train.shape)
+# print(av_train.shape)
+# print(time_train.shape)
+# print(y_train.shape)
+
+"""torch.Size([22467, 2])
+torch.Size([22467, 2])
+torch.Size([22467, 6])
+torch.Size([22467, 6])
+torch.Size([22467, 30, 4])
+torch.Size([22467, 182])
+
+22467 = 37446 * 0.6
+"""
+
+train_dataset = DataSet(ui_train, uv_train, ai_train, av_train, y_train, time_train)
+valid_dataset = DataSet(ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
+test_dataset = DataSet(ui_test, uv_test, ai_test, av_test, y_test, time_test)
+train_set = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+valid_set = DataLoader(valid_dataset, batch_size=batch_size, drop_last=True)
+test_set = DataLoader(test_dataset, batch_size=batch_size, drop_last=True)
+
+# ******************** For run.py ******************** #
+# To record the train_set data number
+datas_user_num = 0
+for index, value in enumerate(train_set):
+    datas_user_num += len(value[0])
+    ui, uv, ai, av, y, time = value
+    # print(av.shape)
+    """torch.Size([32, 4, 6])"""
+    av_uv = torch.cat((av.reshape(-1, av.shape[1] * av.shape[2]), uv.reshape(-1, uv.shape[1])), dim=1)
+    # print(av_uv.shape)
+    """torch.Size([32, 26])"""
+
+    # print(y.shape)
+    """torch.Size([32, 182])"""
+    # 相当于取出了 truth_rate
+    y = y[:, 0].reshape(-1, 1)
+    # print(y.shape)
+    """torch.Size([32, 1])"""
+
+y_truth = torch.rand(32, 1)
+y_pred = torch.rand(32, 1)
+y_truth_bool = y_truth.clone()
+y_truth_bool[y_truth >= 1e-5] = 1.0
+y_truth_bool[y < 1e-5] = 0.0
+
+
+def setMask(y, y_pred, proportions=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]):
+    l = len(proportions)
+    filtered_ys = []
+    filtered_pred_ys = []
+    for i in range(0, l - 1):
+        if i < l - 1:
+            mask = torch.logical_and(y.ge(proportions[i]), y.lt(proportions[i + 1]))
+        else:
+            mask = torch.logical_and(y.ge(proportions[i]), y.le(proportions[i + 1]))
+        filtered_y = torch.masked_select(y, mask)
+        filtered_pred_y = torch.masked_select(y_pred, mask)
+        filtered_ys.append(filtered_y)
+        filtered_pred_ys.append(filtered_pred_y)
+    return filtered_ys, filtered_pred_ys
+
+
+filtered_ys, filtered_pred_ys = setMask(y_truth, y_pred)
+# print(filtered_ys)
+# print(filtered_pred_ys)
+"""
+[tensor([0.0966, 0.0242]), tensor([0.1462]), tensor([0.2537, 0.2087, 0.2427]),
+ tensor([0.3194, 0.3285, 0.3301, 0.3929, 0.3748, 0.3090]), 
+ tensor([0.4454, 0.4167, 0.4653, 0.4620]), tensor([0.5555, 0.5424]),
+  tensor([0.6896, 0.6741]), tensor([]), tensor([0.8345, 0.8889, 0.8285, 0.8434, 0.8906, 0.8184, 0.8883, 0.8103]),
+   tensor([0.9083, 0.9149, 0.9579, 0.9144])]
+[tensor([0.6136, 0.8533]), tensor([0.7630]), tensor([0.2950, 0.2971, 0.6253]),
+ tensor([0.4869, 0.9376, 0.8561, 0.5359, 0.5219, 0.7688]), 
+ tensor([0.2373, 0.1863, 0.8759, 0.4258]), tensor([0.2249, 0.9333]),
+  tensor([0.0554, 0.3042]), tensor([]), tensor([0.5908, 0.6467, 0.8176, 0.2045, 0.1581, 0.2995, 0.2910, 0.1626]),
+   tensor([0.5146, 0.5443, 0.6848, 0.0667])]
+"""
+temp = np.array([])
+temp = np.concatenate((temp, y_truth.detach().cpu().numpy().reshape(-1)), axis=0)
+# print(temp.shape)
+# print(type(temp))
+"""(32,)
+<class 'numpy.ndarray'>"""

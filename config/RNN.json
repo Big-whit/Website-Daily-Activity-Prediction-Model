@@ -1,0 +1,5 @@
+{
+  "model_name": "RNN",
+  "rnn_hidden_size": 64,
+  "rnn_num_layers": 1
+}
