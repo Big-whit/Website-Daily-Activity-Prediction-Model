@@ -3,11 +3,12 @@ import torch
 import torch.nn.functional as F
 from sklearn import metrics
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import roc_auc_score
 
 
 """
 calEvalResult() function's purpose:
-    input: loss value(float), y_preds([batch_size, 1], y_truths([batch_size, 1]))
+    input: loss value(float), y_preds([batch_size, 1](float), y_truths([batch_size, 1]))
     output: rmse, df, MAE
     
     rmse: root mean square error(The smaller the better)
@@ -25,12 +26,11 @@ def calEvalResult(all_loss, y_preds, y_truths, run_type, write_file=None):
     y_trues_bool[y_truths < eps] = 0.0
 
     # rmse
-    error = y_truths - y_preds
-    rmse = (error ** 2).mean() ** 0.5
+    rmse = ((y_truths - y_preds) ** 2).mean() ** 0.5
     # df
     df = abs(y_truths.mean() - y_preds.mean()) / y_truths.mean()
     # MAE
-    MAE = np.absolute(error).mean()
+    MAE = np.absolute(y_truths - y_preds).mean()
 
     log_str = '%20s loss %3.6f  rmse %.4f  df(ActivateDay.Avg) %.4f  MAE %.4f' % (run_type, all_loss, rmse, df, MAE)
 
@@ -67,6 +67,7 @@ def run(epoch,
         ai = ai.to(device)
         av = av.to(device)
         y = y.to(device)
+        time = time.to(device)
 
         if run_type == 'train':
             optimizer.zero_grad()
@@ -84,10 +85,10 @@ def run(epoch,
             optimizer.step()
         all_loss += loss.item() / y.shape[0]
 
-        if epoch != -1:
-            run_type = "train: epoch " + str(epoch)
+    if epoch != -1:
+        run_type = "train: epoch " + str(epoch)
 
-        if model_name != 'MyModel':
-            return calEvalResult(all_loss, y_preds, y_truths, run_type, write_file)
-        else:
-            pass
+    if model_name != 'MyModel':
+        return calEvalResult(all_loss, y_preds, y_truths, run_type, write_file)
+    else:
+        pass

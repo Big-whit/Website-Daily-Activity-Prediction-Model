@@ -5,9 +5,15 @@ from data_process.kwai_process import create_file_by_data as kwai_process_data
 from dataloader.load_data import get_data_loader
 from run import run
 from model.RNN import RNN
+from model.DPCNN import DPCNN
+from model.LR import LR
+from model.LSCNN import LSCNN
 
 model_dict = {
     "RNN": RNN,
+    "DPCNN": DPCNN,
+    "LR": LR,
+    "LSCNN": LSCNN,
 }
 
 
@@ -24,8 +30,8 @@ def main():
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=64, help='batch_size e.g. 32 64')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate e.g. 0.001 0.01')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
-    parser.add_argument('--max_iter', type=int, default=100, help='max_iter e.g. 100 200 ...')
+    parser.add_argument('--weight_decay', type=float, default=5e-5)
+    parser.add_argument('--max_iter', type=int, default=30, help='max_iter e.g. 100 200 ...')
     # dataset
     parser.add_argument('--DataSet', type=str, default='kwai')
     parser.add_argument('--day', type=int, default=23)
@@ -33,11 +39,11 @@ def main():
     parser.add_argument('--data_dilution_ratio', type=float, default=1.0)
     parser.add_argument('--whether_process', type=bool, default=False)
     # loss
-    parser.add_argument('--loss_func', type=str, default='BCE')
+    parser.add_argument('--loss_func', type=str, default='MSE')
     # gpu
     parser.add_argument('--cuda', type=int, default=0)
     # Model
-    parser.add_argument('--model_name', type=str, default='RNN')
+    parser.add_argument('--model_name', type=str, default='LR')
     # bce_weight
     parser.add_argument('--bce_weight', type=float, default=0.05)
     params = parser.parse_args()
@@ -88,13 +94,9 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=params.learning_rate, weight_decay=params.weight_decay)
 
     # best result
-    best_valid_rmse = 1e9
-    best_valid_df = 1e9
-    best_valid_MAE = 0
     best_epoch = 0
-    best_rmse = 0
-    best_df = 0
-    best_MAE = 0
+    best_valid_rmse = best_valid_df = best_valid_MAE = 1e9
+    best_rmse = best_df = best_MAE = 1e9
 
     # train model
     for i in range(params.max_iter):
@@ -105,18 +107,19 @@ def main():
         valid_rmse, valid_df, valid_MAE = run(epoch=-1, dataset=valid_set, model=model, optimizer=optimizer,
                                               device=device, model_name=model_name, run_type='valid', loss_func=None,
                                               write_file=f)
-        print('epoch: %.4f\n  valid_rmse %.4f  valid_df %.4f  valid_MAE %.4f' % (i, valid_rmse, valid_df, valid_MAE))
+        print(
+            'epoch: %.4f\n  valid_rmse %.4f  valid_df %.4f  valid_MAE %.4f' % (i + 1, valid_rmse, valid_df, valid_MAE))
         if valid_rmse < best_valid_rmse:
             model.eval()
-            best_valid_MAE, best_valid_rmse, best_valid_df, best_epoch = valid_MAE, valid_rmse, valid_df, i
+            best_valid_MAE, best_valid_rmse, best_valid_df, best_epoch = valid_MAE, valid_rmse, valid_df, i + 1
             test_rmse, test_df, test_MAE = run(epoch=-1, dataset=test_set, model=model, optimizer=optimizer,
                                                device=device, model_name=model_name, run_type='test', loss_func=None,
                                                write_file=f)
-            print('  test_rmse %.4f  test %.4f  test_MAE %.4f' % (test_rmse, test_df, test_MAE))
+            print('  test_rmse %.4f  test_df %.4f  test_MAE %.4f' % (test_rmse, test_df, test_MAE))
             best_rmse, best_df, best_MAE = test_rmse, test_df, test_MAE
 
     best_log = 'best_epoch: %.4f\n  best_valid_rmse %.4f  best_valid_df %.4f  best_valid_MAE %.4f \n  best_rmse %.4f  best_df %.4f best_MAE %.4f' % (
-    best_epoch, best_valid_rmse, best_valid_df, best_valid_MAE, best_rmse, best_df, best_MAE)
+        best_epoch, best_valid_rmse, best_valid_df, best_valid_MAE, best_rmse, best_df, best_MAE)
     print(best_log)
     f.write(best_log + "\n")
     f.close()

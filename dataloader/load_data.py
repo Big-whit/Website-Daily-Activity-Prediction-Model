@@ -31,8 +31,8 @@ def create_feature_tag(past_day=23, future_day=7, data_name='kwai'):
     global feature
     if data_name == 'kwai':
         feature['id_name'].append('user_id')
-        act_feat_num = 6
-        for index in range(act_feat_num):
+        feature['act_feat_num'] = 6
+        for index in range(feature['act_feat_num']):
             feature['act_feat'].append(str(index) + '#num')
         feature['user_image_feat'].append('register_type')
         feature['user_image_feat'].append('device_type')
@@ -89,27 +89,25 @@ def load_data(past_day, future_day, data_name, data_dilution_ratio):
     r = int(r * data_dilution_ratio)
     df_id = df_id.iloc[:r]
 
-    # Get the user's action statistics and user image feature between 1 ~ past_day.
+    # Get the user image feature between 1 ~ past_day+future_day+1.
+    for i in range(1, past_day + future_day + 1):
+        file_name = 'day_' + str(i) + '_activity_feature.csv'
+        df = pd.read_csv(feature_file_path + file_name)
+        # As for kwai, temp_df_u: ['user_id', 'register_type', 'device_type']
+        temp_df_u = df[feature['id_name'] + feature['user_image_feat']]
+        temp_df_u = pd.merge(df_id, temp_df_u, on=feature['id_name'], how='left')
+        df_u = pd.concat([df_u, temp_df_u])
+        df_u.drop_duplicates(subset=feature['id_name'], inplace=True)
+
+    # Get the user's action statistics between 1 ~ past_day.
     for i in range(1, past_day + 1):
         file_name = 'day_' + str(i) + '_activity_feature.csv'
         df = pd.read_csv(feature_file_path + file_name)
-        temp_df_u = df[feature['id_name'] + feature['user_image_feat']]
+        # As for kwai, temp_df_a: ['user_id', '0#num', '1#num', '2#num', '3#num', '4#num', '5#num']
         temp_df_a = df[feature['id_name'] + feature['act_feat']]
-        temp_df_u = pd.merge(df_id, temp_df_u, on=feature['id_name'], how='left')
         temp_df_a = pd.merge(df_id, temp_df_a, on=feature['id_name'], how='left')
         temp_df_a = temp_df_a.fillna(0)
-        df_u = pd.concat([df_u, temp_df_u])
-        df_u.drop_duplicates(subset=feature['id_name'], inplace=True)
         df_a = pd.concat([df_a, temp_df_a])
-
-    # Add the user image feature between past_day+1 ~ past_day+future_day.
-    for i in range(past_day + 1, past_day + future_day + 1):
-        file_name = 'day_' + str(i) + '_activity_feature.csv'
-        df = pd.read_csv(feature_file_path + file_name)
-        temp_df_u = df[feature['id_name'] + feature['user_image_feat']]
-        temp_df_u = pd.merge(df_id, temp_df_u, on=feature['id_name'], how='left')
-        df_u = pd.concat([df_u, temp_df_u])
-        df_u.drop_duplicates(subset=feature['id_name'], inplace=True)
 
     # Get detailed action statistics of users between day ~ day+future_day, as well as future activity label.
     file_name = data_name + '_act_statistics.csv'
@@ -121,7 +119,7 @@ def load_data(past_day, future_day, data_name, data_dilution_ratio):
     label = pd.merge(df_id, label_1, on=feature['id_name'], how='left')
     label = pd.merge(label, label_2, on=feature['id_name'], how='left')
 
-    # Sort by id_name.
+    # Sort by 'id_name'.
     df_a.sort_values(feature['id_name'], inplace=True)
     df_u.sort_values(feature['id_name'], inplace=True)
     label.sort_values(feature['id_name'], inplace=True)
@@ -260,7 +258,7 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
         av = np.asarray(df_a[feature['act_feat']], dtype=np.float32)
         params['a_feat_size'] = len(av[0])
         params['a_field_size'] = len(ai[0])
-        # av、ai: [data_num, day, action_feature_num]
+        # av、ai: [user_num, day, action_feature_num]
         av = av.reshape((-1, params['day'], len(feature['act_feat'])))
         ai = ai.reshape((-1, params['day'], len(feature['act_feat'])))
         params['act_feat_num'] = feature['act_feat_num']
@@ -323,7 +321,7 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
         torch.save(time_test, save_path + data_dict[17] + save_name + '.pt')
 
         np.save(save_path + data_dict[18] + save_name + '.npy', day_numpy)
-        np.save(save_path + data_dict[19] + save_name+ '.npy', params)
+        np.save(save_path + data_dict[19] + save_name + '.npy', params)
         print('The model input data is saved')
 
     # packaged dataset

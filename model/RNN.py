@@ -1,5 +1,6 @@
 import torch
-
+import torch.nn
+import torch.nn.functional as F
 
 class RNN(torch.nn.Module):
     def __init__(self, model_params):
@@ -35,11 +36,12 @@ class RNN(torch.nn.Module):
                                 batch_first=True)
 
         self.fc_out = torch.nn.Linear(self.seq_len * self.rnn_num_layers * self.rnn_hidden_size, 1)
+        # activation function
         self.sigmoid = torch.nn.Sigmoid()
 
-    def forward(self, ui, uv, ai, av, y=None, time=None, loss_func='MSE'):
-        # ui、uv: [batch_size, a_field_size]
-        # ai、av: [batch_size, day, u_field_size]
+    def forward(self, ui, uv, ai, av, y, time=None, loss_func='MSE'):
+        # ui、uv: [batch_size, u_field_size]
+        # ai、av: [batch_size, day, a_field_size]
         # y: [batch_size, 1]
         h0 = self.init_hidden().to(self.device)
         # out: [batch_size, day * D * hidden_size]
@@ -48,24 +50,18 @@ class RNN(torch.nn.Module):
         # y_pred: [batch_size, 1]
         y_pred = self.sigmoid(self.fc_out(output))
 
-        # y_true_bool (Active or not): [batch_size,  1]
+        # y_true_bool (Active or not): [batch_size, 1](int)
         esp = 1e-5
         y_true_bool = y.clone()
         y_true_bool[y >= esp] = 1.0
         y_true_bool[y < esp] = 0.0
         y_true_bool = y_true_bool.to(self.device)
-        # y_pred_bool (Active or not): [batch_size,  1]
-        y_pred_bool = y_pred.clone()
-        y_pred_bool[y_pred >= 0.5] = 1.0
-        y_pred_bool[y_pred < 0.5] = 0.0
-        y_pred_bool = y_pred_bool.to(self.device)
 
         if y is not None:
             if loss_func == 'BCE':
-                loss = self.criterion_1(y_pred_bool, y_true_bool)
+                loss = self.criterion_1(y_pred, y_true_bool)
             else:
                 loss = self.criterion_2(y_pred, y)
-
             return loss, y_pred
         else:
             return y_pred
