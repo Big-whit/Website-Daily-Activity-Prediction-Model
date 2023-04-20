@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="7aa0db51-41fc-47b8-a15f-5f96cf4ff31a" name="NEU_baidu_1">
+        <fileTransfer rootFolder="/root" accessType="SFTP" host="region-3.seetacloud.com" port="60368" sshConfigId="6ec0fc15-c361-4b15-8f33-37043cda70f4" sshConfig="root@region-3.seetacloud.com:60368 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -21,9 +21,9 @@ def calEvalResult(all_loss, y_preds, y_truths, run_type, write_file=None):
     y_preds_bool[y_preds < 0.5] = 0.0
 
     eps = 1e-5
-    y_trues_bool = np.copy(y_truths)
-    y_trues_bool[y_truths >= eps] = 1.0
-    y_trues_bool[y_truths < eps] = 0.0
+    y_truths_bool = np.copy(y_truths)
+    y_truths_bool[y_truths >= eps] = 1.0
+    y_truths_bool[y_truths < eps] = 0.0
 
     # rmse
     rmse = ((y_truths - y_preds) ** 2).mean() ** 0.5

@@ -1,2 +1,10 @@
 # Website-Daily-Activity-Prediction-Model
-This project is used for undergraduate graduation design. The main task is to design a model that uses the historical log information of 30 days to predict the total activity of the website in the next week or two, as well as the activity of each user.
+
+Kwai Dataset (use 23 to predict 7)
+
+
+| model name | CFIN    | CLSA    | LSCNN   | DPCNN   | LR      | RNN     |
+|------------|---------|---------|---------|---------|---------|---------|
+| RMSE       | 0.27336 | 0.25374 | 0.23214 | 0.23450 | 0.52988 | 0.23440 |
+| df         | 0.05942 | 0.02866 | 0.05132 | 0.01938 | 0.07954 | 0.03372 |
+| MAE        | 0.19674 | 0.17874 | 0.16510 | 0.16286 | 0.24940 | 0.16644 |

@@ -8,12 +8,16 @@ from model.RNN import RNN
 from model.DPCNN import DPCNN
 from model.LR import LR
 from model.LSCNN import LSCNN
+from model.CFIN import CFIN
+from model.CLSA import CLSA
 
 model_dict = {
     "RNN": RNN,
     "DPCNN": DPCNN,
     "LR": LR,
     "LSCNN": LSCNN,
+    "CFIN": CFIN,
+    "CLSA": CLSA,
 }
 
 
@@ -27,11 +31,11 @@ def main():
     # Namespace of Hyper-parameter
     parser = argparse.ArgumentParser()
     # training process
-    parser.add_argument('--seed', type=int, default=1)
+    parser.add_argument('--seed', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=64, help='batch_size e.g. 32 64')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate e.g. 0.001 0.01')
-    parser.add_argument('--weight_decay', type=float, default=5e-5)
-    parser.add_argument('--max_iter', type=int, default=30, help='max_iter e.g. 100 200 ...')
+    parser.add_argument('--weight_decay', type=float, default=1e-5)
+    parser.add_argument('--max_iter', type=int, default=50, help='max_iter e.g. 100 200 ...')
     # dataset
     parser.add_argument('--DataSet', type=str, default='kwai')
     parser.add_argument('--day', type=int, default=23)
@@ -43,7 +47,7 @@ def main():
     # gpu
     parser.add_argument('--cuda', type=int, default=0)
     # Model
-    parser.add_argument('--model_name', type=str, default='LR')
+    parser.add_argument('--model_name', type=str, default='CFIN')
     # bce_weight
     parser.add_argument('--bce_weight', type=float, default=0.05)
     params = parser.parse_args()
@@ -121,7 +125,7 @@ def main():
     best_log = 'best_epoch: %.4f\n  best_valid_rmse %.4f  best_valid_df %.4f  best_valid_MAE %.4f \n  best_rmse %.4f  best_df %.4f best_MAE %.4f' % (
         best_epoch, best_valid_rmse, best_valid_df, best_valid_MAE, best_rmse, best_df, best_MAE)
     print(best_log)
-    f.write(best_log + "\n")
+    f.write(best_log + '\n')
     f.close()
 
 

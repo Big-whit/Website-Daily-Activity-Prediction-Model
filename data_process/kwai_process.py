@@ -117,20 +117,34 @@ def preprocess_data(total_activity_log_file_path, kwai_user_info_file_path, file
 
 
 """
-standardscaler() function's purpose: 
-    1 - For standardization. 
+create_act_statistic_info() function's purpose:
+    1 - Count the number of actions per user between 0~day+future_day
 """
-def standardscaler(file_path, days):
-    scaler = preprocessing.StandardScaler()
-    action_feats = ['all#num', '0#num', '1#num', '2#num', '3#num', '4#num', '5#num']
-    for i in range(1, days + 1):
-        path = file_path + 'log/day_' + str(i) + '_activity_log.csv'
-        df = pd.read_csv(path, engine='python')
-        newX = scaler.fit_transform(df[action_feats])
-        for j, n_f in enumerate(action_feats):
-            df[n_f] = newX[:, j]
-        df.to_csv(file_path + 'feature/day_' + str(i) + '_activity_feature.csv', index=False)
-        print('Day ' + str(i) + ' activity feature is created successfully')
+def create_act_statistic_info(file_path, save_path, day, future_day, act_num):
+    # total_log: ['user_id', 'act_day', 'act_type', 'register_type', 'device_type']
+    total_log = pd.read_csv(file_path + 'log/total_activity_log.csv')
+    # total_log: ['user_id', 'act_day', 'act_type']
+    total_log = total_log.drop(['register_type', 'device_type'], axis=1)
+
+    # df: ['user_id']
+    df = pd.read_csv(file_path + 'info/kwai_user_info.csv')
+    df = df["user_id"]
+
+    for i in range(1, day + future_day + 1):
+        for j in range(act_num):
+            temp_day_act = total_log.copy()
+            temp_day_act = temp_day_act[(temp_day_act.act_day == i) & (temp_day_act.act_type == j)]
+            day_act_count = temp_day_act.groupby('user_id').count()[['act_day', 'act_type']]
+            day_act_count = day_act_count.drop(['act_type'], axis=1)
+            day_act_count = day_act_count.rename(columns={'act_day': 'day' + str(i) + '_' + str(j + 1)})
+            df = pd.merge(df, day_act_count, how='left', on='user_id')
+            del temp_day_act
+            del day_act_count
+
+    # df: ['user_id', 'day_1_1', 'day_1_2', ..., 'day_30_6']
+    df = df.fillna(0)
+    df.to_csv(save_path + 'info/kwai_act_statistics.csv', index=False)
+    print('User act statistics information create successfully! ')
 
 
 """
@@ -149,6 +163,24 @@ def create_date_info(file_path, save_path, day, future_day):
         data['day' + str(i + 1 - day)] = date
         data['week' + str(i + 1 - day)] = date.isoweekday()
     data.to_csv(save_path + 'info/kwai_time.csv', index=False)
+    print('User act time information create successfully! ')
+
+
+"""
+standardscaler() function's purpose: 
+    1 - For standardization. 
+"""
+def standardscaler(file_path, days):
+    scaler = preprocessing.StandardScaler()
+    action_feats = ['all#num', '0#num', '1#num', '2#num', '3#num', '4#num', '5#num']
+    for i in range(1, days + 1):
+        path = file_path + 'log/day_' + str(i) + '_activity_log.csv'
+        df = pd.read_csv(path, engine='python')
+        newX = scaler.fit_transform(df[action_feats])
+        for j, n_f in enumerate(action_feats):
+            df[n_f] = newX[:, j]
+        df.to_csv(file_path + 'feature/day_' + str(i) + '_activity_feature.csv', index=False)
+        print('Day ' + str(i) + ' activity feature is created successfully')
 
 
 def create_file_by_data(day, future_day, dilution_ratio=1.0):
@@ -167,9 +199,8 @@ def create_file_by_data(day, future_day, dilution_ratio=1.0):
     preprocess_data(total_activity_log_file_path, kwai_user_info_file_path, file_path, day, future_day)
     standardscaler(file_path, day)
     create_date_info(kwai_user_info_file_path, file_path, 0, day + future_day)
+    create_act_statistic_info(file_path, file_path, day, future_day, 6)
 
 
 if __name__ == '__main__':
-    pass
-    # create_file_by_data(30, 0)
-    # create_file_by_data(23, 7)
+    create_file_by_data(23, 7)
