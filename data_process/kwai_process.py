@@ -37,9 +37,9 @@ preprocess_data() function's purpose:
     2 - Determine whether each registered user is active within the future future_day、
      whether it is active every day in the future and the active rate.
 """
-def preprocess_data(total_activity_log_file_path, kwai_user_info_file_path, file_path, day, future_day):
+def preprocess_data(total_activity_log_file_path, user_info_file_path, file_path, day, future_day):
     total_activity_log = pd.read_csv(total_activity_log_file_path)
-    register = pd.read_csv(kwai_user_info_file_path)
+    register = pd.read_csv(user_info_file_path)
 
     # step 1 - Saving 'user_id' field for subsequent action.
     # reg_user_id: ['user_id']
@@ -136,12 +136,12 @@ def create_act_statistic_info(file_path, save_path, day, future_day, act_num):
             temp_day_act = temp_day_act[(temp_day_act.act_day == i) & (temp_day_act.act_type == j)]
             day_act_count = temp_day_act.groupby('user_id').count()[['act_day', 'act_type']]
             day_act_count = day_act_count.drop(['act_type'], axis=1)
-            day_act_count = day_act_count.rename(columns={'act_day': 'day' + str(i) + '_' + str(j + 1)})
+            day_act_count = day_act_count.rename(columns={'act_day': 'day' + str(i) + '_' + str(j)})
             df = pd.merge(df, day_act_count, how='left', on='user_id')
             del temp_day_act
             del day_act_count
 
-    # df: ['user_id', 'day_1_1', 'day_1_2', ..., 'day_30_6']
+    # df: ['user_id', 'day_1_0', 'day_1_1', ..., 'day_30_5']
     df = df.fillna(0)
     df.to_csv(save_path + 'info/kwai_act_statistics.csv', index=False)
     print('User act statistics information create successfully! ')

@@ -27,7 +27,7 @@ create_feature_tag() function's purpose:
         'act_feat_num': 6,
     }
 """
-def create_feature_tag(past_day=23, future_day=7, data_name='kwai'):
+def create_feature_tag(past_day=23, future_day=7, data_name='kddcup2015'):
     global feature
     if data_name == 'kwai':
         feature['id_name'].append('user_id')
@@ -36,14 +36,21 @@ def create_feature_tag(past_day=23, future_day=7, data_name='kwai'):
             feature['act_feat'].append(str(index) + '#num')
         feature['user_image_feat'].append('register_type')
         feature['user_image_feat'].append('device_type')
+
     elif data_name == 'kddcup2015':
-        pass
+        feature['id_name'].append('enrollment_id')
+        feature['act_feat_num'] = 7
+        for index in range(feature['act_feat_num']):
+            feature['act_feat'].append(str(index) + '#num')
+        feature['user_image_feat'].append('user_image_1')
+        feature['user_image_feat'].append('user_image_2')
     else:
         pass
 
+    # get day_act_tag
     for i in range(1, past_day + future_day + 1):
         day = 'day' + str(i)
-        for j in range(1, feature['act_feat_num'] + 1):
+        for j in range(0, feature['act_feat_num']):
             day_num = day + '_' + str(j)
             feature['day_act_tag'].append(day_num)
 
@@ -75,7 +82,7 @@ def load_data(past_day, future_day, data_name, data_dilution_ratio):
     elif data_name == 'kddcup2015':
         feature_file_path = './data/kddcup2015/processed_data/feature/'
         label_file_path = './data/kddcup2015/processed_data/info/'
-        time_file_path = './data/kddcup2015/processed_data/info'
+        time_file_path = './data/kddcup2015/processed_data/info/'
 
     # Get unique user id between 1 ~ past_day.
     for i in range(1, past_day + 1):

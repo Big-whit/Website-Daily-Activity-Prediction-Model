@@ -269,8 +269,8 @@ def test_for_model_and_run():
     print(filtered_pred)
 
 
+# ****************************************************************************************** #
 if __name__ == '__main__':
-    a_emb = torch.rand(32, 6, 32)
-    av = torch.rand(32, 6)
-    a_emb = torch.multiply(a_emb, av.reshape(-1, 6, 1))
-    print(a_emb.shape)
+    df = pd.read_csv('./data/kddcup2015/source_data/date.csv')
+    df['day'] = df['to'] - df['from']
+    print(df)

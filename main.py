@@ -2,6 +2,7 @@ import torch
 import argparse
 import json
 from data_process.kwai_process import create_file_by_data as kwai_process_data
+from data_process.kddcup2015_process import create_file_by_data as kddcup2015_process_data
 from dataloader.load_data import get_data_loader
 from run import run
 from model.RNN import RNN
@@ -31,13 +32,13 @@ def main():
     # Namespace of Hyper-parameter
     parser = argparse.ArgumentParser()
     # training process
-    parser.add_argument('--seed', type=int, default=5)
+    parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=64, help='batch_size e.g. 32 64')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate e.g. 0.001 0.01')
     parser.add_argument('--weight_decay', type=float, default=1e-5)
     parser.add_argument('--max_iter', type=int, default=50, help='max_iter e.g. 100 200 ...')
     # dataset
-    parser.add_argument('--DataSet', type=str, default='kwai')
+    parser.add_argument('--DataSet', type=str, default='kddcup2015')
     parser.add_argument('--day', type=int, default=23)
     parser.add_argument('--future_day', type=int, default=7)
     parser.add_argument('--data_dilution_ratio', type=float, default=1.0)
@@ -63,6 +64,8 @@ def main():
         if params.DataSet == 'kwai':
             kwai_process_data(params.day, params.future_day, params.data_dilution_ratio)
         elif params.DataSet == 'kddcup2015':
+            kddcup2015_process_data(params.day, params.future_day, params.data_dilution_ratio)
+        else:
             pass
 
     """    
@@ -75,6 +78,8 @@ def main():
     if params.DataSet == 'kwai':
         train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param, data_name='kwai')
     elif params.DataSet == 'kddcup2015':
+        train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param, data_name='kddcup2015')
+    else:
         pass
 
     # Create Model
