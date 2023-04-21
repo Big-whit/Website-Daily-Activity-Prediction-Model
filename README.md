@@ -1,6 +1,7 @@
 # Website-Daily-Activity-Prediction-Model
 
-Kwai Dataset (use 23 to predict 7)
+
+**Kwai Dataset (use 23 to predict 7)**
 
 
 | model name | CFIN    | CLSA    | LSCNN   | DPCNN   | LR      | RNN     |
@@ -8,3 +9,13 @@ Kwai Dataset (use 23 to predict 7)
 | RMSE       | 0.27336 | 0.25374 | 0.23214 | 0.23450 | 0.52988 | 0.23440 |
 | df         | 0.05942 | 0.02866 | 0.05132 | 0.01938 | 0.07954 | 0.03372 |
 | MAE        | 0.19674 | 0.17874 | 0.16510 | 0.16286 | 0.24940 | 0.16644 |
+![kwai_23_7.png](https://s2.loli.net/2023/04/21/P84cgECxpXLRnAd.png)
+
+**kddcup2015 (use 23 to predict 7)**
+
+| model name | CFIN    | CLSA    | LSCNN   | DPCNN   | LR      | RNN     |
+|------------|---------|---------|---------|---------|---------|---------|
+| RMSE       | 0.12244 | 0.11458 | 0.10908 | 0.12224 | 0.13368 | 0.12236 |
+| df         | 0.06394 | 0.04886 | 0.04098 | 0.01650 | 0.09774 | 0.03802 |
+| MAE        | 0.08476 | 0.06450 | 0.06140 | 0.08146 | 0.09090 | 0.07170 |
+![kddcup2015_23_7.png](https://s2.loli.net/2023/04/21/TQyBCqFhNoAutIU.png)

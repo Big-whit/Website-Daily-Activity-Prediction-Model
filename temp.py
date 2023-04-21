@@ -4,6 +4,7 @@ import datetime
 import torch
 from torch.utils.data import DataLoader
 from dataloader.load_data import DataSet
+import matplotlib.pyplot as plt
 
 feature = {
     'act_feat': ['0#num', '1#num', '2#num', '3#num', '4#num', '5#num'],
@@ -269,8 +270,34 @@ def test_for_model_and_run():
     print(filtered_pred)
 
 
+def draw_result():
+    model_name = ['CFIN', 'CLSA', 'LSCNN', 'DPCNN', 'LR', 'RNN']
+    # kwai_23_7
+    # rmse = [0.27336, 0.25374, 0.23214, 0.23450, 0.52988, 0.23440]
+    # df = [0.05942, 0.02866, 0.05132, 0.01938, 0.07954, 0.03372]
+    # mae = [0.19674, 0.17874, 0.16510, 0.16286, 0.24940, 0.16644]
+
+    # kddcup2015_23_7
+    rmse = [0.12244, 0.11458, 0.10908, 0.12224, 0.13368, 0.12236]
+    df = [0.06394, 0.04886, 0.04098, 0.01650, 0.09774, 0.03802]
+    mae = [0.08476, 0.06450, 0.06140, 0.08146, 0.09090, 0.07170]
+
+    plt.plot(model_name, rmse, 'r', marker='.', markersize=4, label='RMSE')
+    plt.plot(model_name, df, 'g', marker='*', markersize=4, label='df')
+    plt.plot(model_name, mae, 'b', marker='X', markersize=4, label='MAE')
+    plt.xlabel("Model Name")
+    plt.ylabel("Value")
+    plt.title("Kddcup2015 dataset, use 23 to predict 7")
+    plt.legend(loc="upper left")
+    for x1, y1 in zip(model_name, rmse):
+        plt.text(x1, y1, str(y1), ha='center', va='bottom', fontsize=10)
+    for x1, y1 in zip(model_name, df):
+        plt.text(x1, y1, str(y1), ha='center', va='bottom', fontsize=10)
+    for x1, y1 in zip(model_name, mae):
+        plt.text(x1, y1, str(y1), ha='center', va='bottom', fontsize=10)
+    plt.show()
+
+
 # ****************************************************************************************** #
 if __name__ == '__main__':
-    df = pd.read_csv('./data/kddcup2015/source_data/date.csv')
-    df['day'] = df['to'] - df['from']
-    print(df)
+    draw_result()
