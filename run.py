@@ -5,7 +5,6 @@ from sklearn import metrics
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import roc_auc_score
 
-
 """
 calEvalResult() function's purpose:
     input: loss value(float), y_preds([batch_size, 1](float), y_truths([batch_size, 1]))
@@ -15,22 +14,21 @@ calEvalResult() function's purpose:
     df: degrees of freedom(The smaller the better)
     MAE: mean absolute error(The smaller the better)
 """
-def calEvalResult(all_loss, y_preds, y_truths, run_type, write_file=None):
-    y_preds_bool = np.copy(y_preds)
-    y_preds_bool[y_preds >= 0.5] = 1.0
-    y_preds_bool[y_preds < 0.5] = 0.0
 
-    eps = 1e-5
-    y_truths_bool = np.copy(y_truths)
-    y_truths_bool[y_truths >= eps] = 1.0
-    y_truths_bool[y_truths < eps] = 0.0
 
-    # rmse
-    rmse = ((y_truths - y_preds) ** 2).mean() ** 0.5
+def calEvalResult(all_loss, predict_results, run_type, model_name, write_file=None):
+    if model_name == 'MyModel':
+        y_preds, y_truths, y_preds_2, y_truths_2 = predict_results
+    else:
+        y_preds, y_truths, = predict_results
+
+    error = y_truths - y_preds
+    # RMSE
+    rmse = ((error) ** 2).mean() ** 0.5
     # df
     df = abs(y_truths.mean() - y_preds.mean()) / y_truths.mean()
     # MAE
-    MAE = np.absolute(y_truths - y_preds).mean()
+    MAE = np.absolute(error).mean()
 
     log_str = '%20s loss %3.6f  rmse %.4f  df(ActivateDay.Avg) %.4f  MAE %.4f' % (run_type, all_loss, rmse, df, MAE)
 
@@ -48,9 +46,12 @@ def run(epoch,
         model_name,
         run_type,
         loss_func=None,
-        write_file=None):
+        write_file=None,
+        model_params=None):
     y_truths = np.array([])
     y_preds = np.array([])
+    y_truths_2 = np.array([])
+    y_preds_2 = np.array([])
     all_loss = 0
     dataset_user_num = 0
 
@@ -80,6 +81,31 @@ def run(epoch,
             # y_preds is the list of user active or not in future days
             y_preds = np.concatenate((y_preds, y_pred.reshape(-1).detach().cpu().numpy()), axis=0)
 
+        else:
+            day = model_params['day']
+            future_day = model_params['future_day']
+            batch_size = model_params['batch_size']
+
+            # y_1_input: [batch_size, 1], represent whether active within the next 'future_day'
+            y_1_input = y[:, 0].reshape(-1, 1)
+
+            # y_2: [batch_size, (day + future_day) * a_field_size]
+            y_2 = y[:, 2:].detach().to(device)
+            y_2 = y_2.reshape(batch_size, day + future_day, -1)
+            y_2 = y_2[:, day:, :]
+            y_2_input = y_2.clone()
+            one = torch.ones_like(y_2_input)
+            zero = torch.zeros_like(y_2_input)
+            # y_2_input: [batch_size, future_day, a_field_size], represents the daily activity level for the next 'future_day', and predict each action's number
+            y_2_input = torch.where(y_2_input == 0, zero, one)
+
+            # time: [batch_size, day + future_day, 4]
+            time = time.to(device)
+
+            loss, y_pred_1, y_pred_2 = model.forward(ui, uv, ai, av, y_1_input, y_2_input, time)
+            y_truths = np.concatenate((y_truths, y_1_input.detach().cpu().numpy().reshape(-1)), axis=0)
+            y_preds = np.concatenate((y_preds, y_pred_1.reshape(-1).detach().cpu().numpy()), axis=0)
+
         if run_type == 'train':
             loss.backward()
             optimizer.step()
@@ -89,6 +115,8 @@ def run(epoch,
         run_type = "train: epoch " + str(epoch)
 
     if model_name != 'MyModel':
-        return calEvalResult(all_loss, y_preds, y_truths, run_type, write_file)
+        predict_results = y_preds, y_truths
     else:
-        pass
+        predict_results = y_preds, y_truths, y_preds_2, y_truths_2
+
+    return calEvalResult(all_loss, predict_results, run_type, model_name, write_file)

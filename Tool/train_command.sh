@@ -1,3 +1,4 @@
+cd ../
 python main.py --model_name 'CFIN' --DataSet 'kwai' --seed 1 --weight_decay 1e-5
 python main.py --model_name 'CFIN' --DataSet 'kwai' --seed 2 --weight_decay 1e-5
 python main.py --model_name 'CFIN' --DataSet 'kwai' --seed 3 --weight_decay 1e-5
@@ -34,6 +35,12 @@ python main.py --model_name 'LR' --DataSet 'kwai' --seed 3 --weight_decay 1e-5
 python main.py --model_name 'LR' --DataSet 'kwai' --seed 4 --weight_decay 1e-5
 python main.py --model_name 'LR' --DataSet 'kwai' --seed 5 --weight_decay 1e-5
 
+python main.py --model_name 'MyModel' --DataSet 'kwai' --seed 1 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kwai' --seed 2 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kwai' --seed 3 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kwai' --seed 4 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kwai' --seed 5 --weight_decay 1e-5
+
 python main.py --model_name 'CFIN' --DataSet 'kddcup2015' --seed 1 --weight_decay 1e-5
 python main.py --model_name 'CFIN' --DataSet 'kddcup2015' --seed 2 --weight_decay 1e-5
 python main.py --model_name 'CFIN' --DataSet 'kddcup2015' --seed 3 --weight_decay 1e-5
@@ -69,3 +76,9 @@ python main.py --model_name 'LR' --DataSet 'kddcup2015' --seed 2 --weight_decay 
 python main.py --model_name 'LR' --DataSet 'kddcup2015' --seed 3 --weight_decay 1e-5
 python main.py --model_name 'LR' --DataSet 'kddcup2015' --seed 4 --weight_decay 1e-5
 python main.py --model_name 'LR' --DataSet 'kddcup2015' --seed 5 --weight_decay 1e-5
+
+python main.py --model_name 'MyModel' --DataSet 'kddcup2015' --seed 1 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kddcup2015' --seed 2 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kddcup2015' --seed 3 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kddcup2015' --seed 4 --weight_decay 1e-5
+python main.py --model_name 'MyModel' --DataSet 'kddcup2015' --seed 5 --weight_decay 1e-5

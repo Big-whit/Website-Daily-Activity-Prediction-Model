@@ -11,6 +11,7 @@ from model.LR import LR
 from model.LSCNN import LSCNN
 from model.CFIN import CFIN
 from model.CLSA import CLSA
+from model.MyModel import MyModel
 
 model_dict = {
     "RNN": RNN,
@@ -19,6 +20,7 @@ model_dict = {
     "LSCNN": LSCNN,
     "CFIN": CFIN,
     "CLSA": CLSA,
+    "MyModel": MyModel,
 }
 
 
@@ -38,7 +40,7 @@ def main():
     parser.add_argument('--weight_decay', type=float, default=1e-5)
     parser.add_argument('--max_iter', type=int, default=50, help='max_iter e.g. 100 200 ...')
     # dataset
-    parser.add_argument('--DataSet', type=str, default='kddcup2015')
+    parser.add_argument('--DataSet', type=str, default='kwai')
     parser.add_argument('--day', type=int, default=23)
     parser.add_argument('--future_day', type=int, default=7)
     parser.add_argument('--data_dilution_ratio', type=float, default=1.0)
@@ -48,7 +50,7 @@ def main():
     # gpu
     parser.add_argument('--cuda', type=int, default=0)
     # Model
-    parser.add_argument('--model_name', type=str, default='CFIN')
+    parser.add_argument('--model_name', type=str, default='MyModel')
     # bce_weight
     parser.add_argument('--bce_weight', type=float, default=0.05)
     params = parser.parse_args()
@@ -78,7 +80,8 @@ def main():
     if params.DataSet == 'kwai':
         train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param, data_name='kwai')
     elif params.DataSet == 'kddcup2015':
-        train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param, data_name='kddcup2015')
+        train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param,
+                                                                           data_name='kddcup2015')
     else:
         pass
 
@@ -93,9 +96,9 @@ def main():
     model.to(device)
 
     # log file
-    file_name = './log/' + str(params.DataSet) + '_' + str(params.model_name) + '_' + str(params.loss_func) + '_' + \
-                str(params.seed) + '_' + str(params.learning_rate) + '_' + str(params.weight_decay) + '_' + \
-                str(params.max_iter) + '-'
+    file_name = './log/' + str(params.DataSet) + '_' + str(params.model_name) + '_' + str(params.loss_func) + '_' + str(
+        params.day) + '_' + str(params.future_day) + '_' + str(params.seed) + '_' + str(
+        params.learning_rate) + '_' + str(params.weight_decay) + '_' + str(params.max_iter) + '-'
     f = open(file_name + 'log.txt', 'w')
     f.write(str(model_params) + '\n')
 
@@ -111,11 +114,11 @@ def main():
     for i in range(params.max_iter):
         model.train()
         run(epoch=i, dataset=train_set, model=model, optimizer=optimizer, device=device, model_name=model_name,
-            run_type='train', loss_func=params.loss_func, write_file=f)
+            run_type='train', loss_func=params.loss_func, write_file=f, model_params=model_params)
         model.eval()
         valid_rmse, valid_df, valid_MAE = run(epoch=-1, dataset=valid_set, model=model, optimizer=optimizer,
                                               device=device, model_name=model_name, run_type='valid', loss_func=None,
-                                              write_file=f)
+                                              write_file=f, model_params=model_params)
         print(
             'epoch: %.4f\n  valid_rmse %.4f  valid_df %.4f  valid_MAE %.4f' % (i + 1, valid_rmse, valid_df, valid_MAE))
         if valid_rmse < best_valid_rmse:
@@ -123,7 +126,7 @@ def main():
             best_valid_MAE, best_valid_rmse, best_valid_df, best_epoch = valid_MAE, valid_rmse, valid_df, i + 1
             test_rmse, test_df, test_MAE = run(epoch=-1, dataset=test_set, model=model, optimizer=optimizer,
                                                device=device, model_name=model_name, run_type='test', loss_func=None,
-                                               write_file=f)
+                                               write_file=f, model_params=model_params)
             print('  test_rmse %.4f  test_df %.4f  test_MAE %.4f' % (test_rmse, test_df, test_MAE))
             best_rmse, best_df, best_MAE = test_rmse, test_df, test_MAE
 

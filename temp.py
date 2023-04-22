@@ -9,9 +9,8 @@ import matplotlib.pyplot as plt
 feature = {
     'act_feat': ['0#num', '1#num', '2#num', '3#num', '4#num', '5#num'],
     'user_image_feat': ['register_type', 'device_type'],
-    'day_act_tag': [],
     'id_name': ['user_id'],
-    'truth_tag': ['truth_rate', 'total_activity_day'],
+    'truth_tag': ['truth_rate', 'total_activity_day', 'day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'day7'],
     'feat_num': 6,
 }
 params = {}
@@ -50,22 +49,17 @@ def user_activate_day_count(future_day, label):
     return day_numpy
 
 
-def test_for_dataloader():
+def dataloader():
     df_u = pd.DataFrame()
     df_a = pd.DataFrame()
     df_id = pd.DataFrame()
-    past_day = 4
-    future_day = 26
+    past_day = 23
+    future_day = 7
     data_name = 'kwai'
     batch_size = 32
     feature_file_path = './data/kwai/processed_data/feature/'
     label_file_path = './data/kwai/processed_data/info/'
     time_file_path = './data/kwai/processed_data/info/'
-    for i in range(1, past_day + future_day + 1):
-        day = 'day' + str(i)
-        for j in range(1, feature['feat_num'] + 1):
-            day_num = day + '_' + str(j)
-            feature['day_act_tag'].append(day_num)
 
     for i in range(1, past_day + 1):
         file_name = 'day_' + str(i) + '_activity_feature.csv'
@@ -85,12 +79,10 @@ def test_for_dataloader():
         df_u.drop_duplicates(subset=feature['id_name'], inplace=True)
         df_a = pd.concat([df_a, temp_df_a])
 
-    label_1 = pd.read_csv(label_file_path + data_name + '_act_statistics.csv')
-    label_1 = label_1[feature['id_name'] + feature['day_act_tag']]
-    label_2 = pd.read_csv(label_file_path + data_name + '_user_info.csv')
-    label_2 = label_2[feature['id_name'] + feature['truth_tag']]
-    label = pd.merge(df_id, label_1, on=feature['id_name'], how='left')
-    label = pd.merge(label, label_2, on=feature['id_name'], how='left')
+    file_name = data_name + '_user_info.csv'
+    label = pd.read_csv(label_file_path + file_name)
+    label = label[feature['id_name'] + feature['truth_tag']]
+    label = pd.merge(df_id, label, on=feature['id_name'], how='left')
 
     file_name = data_name + '_time.csv'
     df_time = pd.read_csv(time_file_path + file_name)
@@ -184,7 +176,7 @@ def test_for_dataloader():
     params['act_feat_num'] = len(feature['act_feat'])
     time_npy = np.asarray(df_time_split, dtype=np.float32)
     time_npy = time_npy.reshape((-1, past_day + future_day, 4))
-    y = np.asarray(label[feature['truth_tag'] + feature['day_act_tag']], dtype=np.float32)
+    y = np.asarray(label[feature['truth_tag']], dtype=np.float32)
 
     # print(ui.shape)
     # print(uv.shape)
@@ -246,6 +238,44 @@ def test_for_dataloader():
     valid_set = DataLoader(valid_dataset, batch_size=batch_size, drop_last=True)
     test_set = DataLoader(test_dataset, batch_size=batch_size, drop_last=True)
 
+    return train_set, valid_set, test_set
+
+
+def test_for_dataloader(multi_task_enable=True):
+    train_set, valid_set, test_set = dataloader()
+    for index, value in enumerate(train_set):
+        ui, uv, ai, av, y, time = value
+        y_1 = y[:, 2:].detach()
+        one = torch.ones_like(y_1)
+        zero = torch.zeros_like(y_1)
+        # 未来每天是否活跃
+        # y_1: [batch_size, future_day]
+        y_1 = torch.where(y_1 == 0, zero, one)
+
+        # 总活跃天数
+        # y_2: [batch_size, 1]
+        y_2 = y[:, 1].detach().long()
+        # 未来 7 天活跃了几天，one-hot 编码
+        # y_2_input: [batch_size, future_day + 1]
+        y_2_input = torch.nn.functional.one_hot(y_2, num_classes=7 + 1).float()
+
+        if multi_task_enable == True:
+            # 未来 7 天的活跃比
+            y_2 = y_2 / 7
+        else:
+            # 未来 7 天是否活跃
+            y_2 = y[:, 0]
+
+        y_2_labels = torch.argmax(y_2_input, 1) / (y_2_input.shape[1])
+        print(y_2_labels)
+
+        # print(ui.shape)           # torch.Size([32, 2])
+        # print(uv.shape)           # torch.Size([32, 2])
+        # print(ai.shape)           # torch.Size([32, 23, 6])
+        # print(av.shape)           # torch.Size([32, 23, 6])
+        # print(y.shape)            # torch.Size([32, 9])
+        # print(time.shape)         # torch.Size([32, 30, 4])
+
 
 # **************************************** For tool.py **************************************** #
 def setMask(y_truth, y_pred, proportions=None):
@@ -270,6 +300,7 @@ def test_for_model_and_run():
     print(filtered_pred)
 
 
+# **************************************** For draw.py **************************************** #
 def draw_result():
     model_name = ['CFIN', 'CLSA', 'LSCNN', 'DPCNN', 'LR', 'RNN']
     # kwai_23_7
@@ -300,4 +331,6 @@ def draw_result():
 
 # ****************************************************************************************** #
 if __name__ == '__main__':
-    draw_result()
+    with open('log/kwai/CFIN/kwai_CFIN_MSE_23_7_1_0.001_1e-05_50-log.txt', 'r') as f:
+        temp_result = f.readlines()[-1].split()
+        print(temp_result)

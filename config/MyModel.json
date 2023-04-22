@@ -1,0 +1,16 @@
+{
+    "model_name": "MyModel",
+    "multi_task_enable":0,
+    "fine_grained":1,
+
+    "week_num":7,
+    "day_num": 30,
+    "u_embedding_size":64,
+    "a_embedding_size":64,
+    "time_embedding_size":30,
+
+    "num_attention_head": 1,
+
+    "time_hidden_size":20,
+    "action_hidden_size": 20
+}
