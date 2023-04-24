@@ -76,12 +76,12 @@ def run_main():
     log_file_path = '../log/'
     pic_save_path = '../log/result_picture/'
     model_params = {
-        'dataset': ['kwai'],
+        'dataset': [ 'kwai'],
         'model': ['CFIN', 'CLSA', 'DPCNN', 'MyModel', 'LSCNN', 'RNN'],
         'loss_func': 'MSE',
         'seed': [1, 2, 3, 4, 5],
-        'day': 14,
-        'future_day': 16,
+        'day': 7,
+        'future_day': 23,
         'learning_rate': 0.001,
         'wd': 1e-5,
         'max_iter': 50,
