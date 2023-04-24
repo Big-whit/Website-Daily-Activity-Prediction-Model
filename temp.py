@@ -331,6 +331,13 @@ def draw_result():
 
 # ****************************************************************************************** #
 if __name__ == '__main__':
-    with open('log/kwai/CFIN/kwai_CFIN_MSE_23_7_1_0.001_1e-05_50-log.txt', 'r') as f:
-        temp_result = f.readlines()[-1].split()
-        print(temp_result)
+    a = np.load('./kwai_MyModel_23_7_truth_1.npy', allow_pickle=True)
+    print(a.shape)
+    print(a[1])
+    print(a[2])
+    print(a[3])
+    print(a[4])
+    print(a[5])
+    print(a[6])
+    print(a[7])
+    print(a[8])

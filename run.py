@@ -50,8 +50,8 @@ def run(epoch,
         model_params=None):
     y_truths = np.array([])
     y_preds = np.array([])
-    y_truths_2 = np.array([])
-    y_preds_2 = np.array([])
+    y_truths_2 = None
+    y_preds_2 = None
     all_loss = 0
     dataset_user_num = 0
 
@@ -106,6 +106,13 @@ def run(epoch,
             y_truths = np.concatenate((y_truths, y_1_input.detach().cpu().numpy().reshape(-1)), axis=0)
             y_preds = np.concatenate((y_preds, y_pred_1.reshape(-1).detach().cpu().numpy()), axis=0)
 
+            if y_truths_2 is None:
+                y_truths_2 = y_2_input.detach().cpu().numpy()
+                y_preds_2 = y_pred_2.detach().cpu().numpy()
+            else:
+                y_truths_2 = np.concatenate((y_truths_2, y_2_input.detach().cpu().numpy()), axis=0)
+                y_preds_2 = np.concatenate((y_preds_2, y_pred_2.detach().cpu().numpy()), axis=0)
+
         if run_type == 'train':
             loss.backward()
             optimizer.step()
@@ -118,5 +125,13 @@ def run(epoch,
         predict_results = y_preds, y_truths
     else:
         predict_results = y_preds, y_truths, y_preds_2, y_truths_2
+
+        # if run_type == 'test':
+        #     pred_file_name = model_params['DataSet'] + '_' + model_name + '_' + str(model_params['day']) + '_' + \
+        #                      str(model_params['future_day']) + '_pred_1.npy'
+        #     np.save(pred_file_name, y_preds_2)
+        #     truth_file_name = model_params['DataSet'] + '_' + model_name + '_' + str(model_params['day']) + '_' + \
+        #                       str(model_params['future_day']) + '_truth_1.npy'
+        #     np.save(truth_file_name, y_truths_2)
 
     return calEvalResult(all_loss, predict_results, run_type, model_name, write_file)

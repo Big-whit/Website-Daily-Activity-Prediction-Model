@@ -335,7 +335,7 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
     # ui_train、uv_train: [user_num, user_image_feature_num]
     # ai_train、av_train: [user_num, past_day, action_feature_num]
     # time_train: [user_num, past_day + future_day, 4]
-    # y: [user_num, truth + total_activity_day + day1_1 + ... + dayN_feature_num]
+    # y: [user_num, truth_rate + total_activity_day + day1_1 + ... + dayN_feature_num]
     train_dataset = DataSet(ui_train, uv_train, ai_train, av_train, y_train, time_train)
     valid_dataset = DataSet(ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
     test_dataset = DataSet(ui_test, uv_test, ai_test, av_test, y_test, time_test)

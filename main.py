@@ -41,8 +41,8 @@ def main():
     parser.add_argument('--max_iter', type=int, default=50, help='max_iter e.g. 100 200 ...')
     # dataset
     parser.add_argument('--DataSet', type=str, default='kwai')
-    parser.add_argument('--day', type=int, default=23)
-    parser.add_argument('--future_day', type=int, default=7)
+    parser.add_argument('--day', type=int, default=7)
+    parser.add_argument('--future_day', type=int, default=23)
     parser.add_argument('--data_dilution_ratio', type=float, default=1.0)
     parser.add_argument('--whether_process', type=bool, default=False)
     # loss
