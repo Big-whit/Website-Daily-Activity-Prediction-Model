@@ -1,109 +1,113 @@
 {'model_name': 'MyModel', 'multi_task_enable': 1, 'fine_grained': 1, 'week_num': 7, 'day_num': 30, 'period_num': 2, 'u_embedding_size': 64, 'a_embedding_size': 64, 'time_embedding_size': 30, 'u_attention_head_num': 1, 'time_attention_head_num': 1, 'a_attention_head_num': 1, 'pf_attention_head_num': 1, 'time_hidden_size': 20, 'action_hidden_size': 20, 'seed': 3, 'batch_size': 64, 'learning_rate': 0.001, 'weight_decay': 1e-05, 'max_iter': 50, 'DataSet': 'kwai', 'day': 7, 'future_day': 23, 'data_dilution_ratio': 1.0, 'whether_process': False, 'loss_func': 'MSE', 'cuda': 0, 'bce_weight': 0.05, 'device': device(type='cuda', index=0), 'u_feat_size': 1472, 'u_field_size': 2, 'a_feat_size': 6, 'a_field_size': 6, 'act_feat_num': 6}
-      train: epoch 0 loss 0.948176  rmse 0.4843  df(ActivateDay.Avg) 0.9116  MAE 0.3657
-               valid loss 0.040444  rmse 0.2749  df(ActivateDay.Avg) 0.2660  MAE 0.2355
-                test loss 0.041606  rmse 0.2790  df(ActivateDay.Avg) 0.2284  MAE 0.2355
-      train: epoch 1 loss 0.111058  rmse 0.2622  df(ActivateDay.Avg) 0.0393  MAE 0.2059
-               valid loss 0.035443  rmse 0.2568  df(ActivateDay.Avg) 0.0116  MAE 0.1986
-                test loss 0.037168  rmse 0.2634  df(ActivateDay.Avg) 0.0314  MAE 0.1991
-      train: epoch 2 loss 0.102612  rmse 0.2518  df(ActivateDay.Avg) 0.0298  MAE 0.1932
-               valid loss 0.034783  rmse 0.2542  df(ActivateDay.Avg) 0.1006  MAE 0.1868
-                test loss 0.036785  rmse 0.2619  df(ActivateDay.Avg) 0.1201  MAE 0.1880
-      train: epoch 3 loss 0.097626  rmse 0.2456  df(ActivateDay.Avg) 0.0197  MAE 0.1844
-               valid loss 0.034262  rmse 0.2532  df(ActivateDay.Avg) 0.0411  MAE 0.1893
-                test loss 0.035985  rmse 0.2599  df(ActivateDay.Avg) 0.0642  MAE 0.1906
-      train: epoch 4 loss 0.092472  rmse 0.2386  df(ActivateDay.Avg) 0.0164  MAE 0.1775
-               valid loss 0.034324  rmse 0.2537  df(ActivateDay.Avg) 0.0692  MAE 0.1840
-      train: epoch 5 loss 0.090172  rmse 0.2353  df(ActivateDay.Avg) 0.0179  MAE 0.1727
-               valid loss 0.035698  rmse 0.2589  df(ActivateDay.Avg) 0.1645  MAE 0.1813
-      train: epoch 6 loss 0.086132  rmse 0.2298  df(ActivateDay.Avg) 0.0134  MAE 0.1668
-               valid loss 0.035275  rmse 0.2578  df(ActivateDay.Avg) 0.0351  MAE 0.1895
-      train: epoch 7 loss 0.083978  rmse 0.2267  df(ActivateDay.Avg) 0.0085  MAE 0.1635
-               valid loss 0.035074  rmse 0.2570  df(ActivateDay.Avg) 0.0805  MAE 0.1838
-      train: epoch 8 loss 0.081372  rmse 0.2228  df(ActivateDay.Avg) 0.0148  MAE 0.1600
-               valid loss 0.035165  rmse 0.2576  df(ActivateDay.Avg) 0.0201  MAE 0.1890
-      train: epoch 9 loss 0.080089  rmse 0.2209  df(ActivateDay.Avg) 0.0072  MAE 0.1565
-               valid loss 0.034653  rmse 0.2556  df(ActivateDay.Avg) 0.0867  MAE 0.1823
-     train: epoch 10 loss 0.077236  rmse 0.2166  df(ActivateDay.Avg) 0.0078  MAE 0.1531
-               valid loss 0.034557  rmse 0.2551  df(ActivateDay.Avg) 0.1004  MAE 0.1773
-     train: epoch 11 loss 0.077023  rmse 0.2161  df(ActivateDay.Avg) 0.0077  MAE 0.1518
-               valid loss 0.034681  rmse 0.2557  df(ActivateDay.Avg) 0.0107  MAE 0.1855
-     train: epoch 12 loss 0.074395  rmse 0.2120  df(ActivateDay.Avg) 0.0090  MAE 0.1485
-               valid loss 0.035503  rmse 0.2588  df(ActivateDay.Avg) 0.0295  MAE 0.1877
-     train: epoch 13 loss 0.076283  rmse 0.2151  df(ActivateDay.Avg) 0.0027  MAE 0.1504
-               valid loss 0.034412  rmse 0.2544  df(ActivateDay.Avg) 0.1526  MAE 0.1735
-     train: epoch 14 loss 0.072238  rmse 0.2085  df(ActivateDay.Avg) 0.0059  MAE 0.1453
-               valid loss 0.035089  rmse 0.2575  df(ActivateDay.Avg) 0.1775  MAE 0.1948
-     train: epoch 15 loss 0.072621  rmse 0.2088  df(ActivateDay.Avg) 0.0082  MAE 0.1452
-               valid loss 0.034177  rmse 0.2536  df(ActivateDay.Avg) 0.1326  MAE 0.1861
-     train: epoch 16 loss 0.071488  rmse 0.2074  df(ActivateDay.Avg) 0.0107  MAE 0.1438
-               valid loss 0.032862  rmse 0.2480  df(ActivateDay.Avg) 0.0713  MAE 0.1735
-                test loss 0.035550  rmse 0.2586  df(ActivateDay.Avg) 0.0841  MAE 0.1788
-     train: epoch 17 loss 0.071524  rmse 0.2075  df(ActivateDay.Avg) 0.0026  MAE 0.1440
-               valid loss 0.033823  rmse 0.2524  df(ActivateDay.Avg) 0.0825  MAE 0.1846
-     train: epoch 18 loss 0.069355  rmse 0.2038  df(ActivateDay.Avg) 0.0105  MAE 0.1415
-               valid loss 0.034388  rmse 0.2546  df(ActivateDay.Avg) 0.1006  MAE 0.1893
-     train: epoch 19 loss 0.069975  rmse 0.2049  df(ActivateDay.Avg) 0.0038  MAE 0.1414
-               valid loss 0.034765  rmse 0.2561  df(ActivateDay.Avg) 0.1028  MAE 0.1896
-     train: epoch 20 loss 0.069023  rmse 0.2033  df(ActivateDay.Avg) 0.0021  MAE 0.1403
-               valid loss 0.032984  rmse 0.2487  df(ActivateDay.Avg) 0.0875  MAE 0.1733
-     train: epoch 21 loss 0.070549  rmse 0.2052  df(ActivateDay.Avg) 0.0092  MAE 0.1420
-               valid loss 0.035547  rmse 0.2595  df(ActivateDay.Avg) 0.2165  MAE 0.1989
-     train: epoch 22 loss 0.068376  rmse 0.2022  df(ActivateDay.Avg) 0.0030  MAE 0.1394
-               valid loss 0.034095  rmse 0.2535  df(ActivateDay.Avg) 0.1074  MAE 0.1875
-     train: epoch 23 loss 0.067242  rmse 0.2004  df(ActivateDay.Avg) 0.0079  MAE 0.1385
-               valid loss 0.034314  rmse 0.2541  df(ActivateDay.Avg) 0.1327  MAE 0.1727
-     train: epoch 24 loss 0.067316  rmse 0.2004  df(ActivateDay.Avg) 0.0008  MAE 0.1369
-               valid loss 0.033089  rmse 0.2491  df(ActivateDay.Avg) 0.0910  MAE 0.1712
-     train: epoch 25 loss 0.067689  rmse 0.2011  df(ActivateDay.Avg) 0.0027  MAE 0.1383
-               valid loss 0.035610  rmse 0.2598  df(ActivateDay.Avg) 0.2383  MAE 0.1985
-     train: epoch 26 loss 0.066791  rmse 0.1996  df(ActivateDay.Avg) 0.0034  MAE 0.1366
-               valid loss 0.034024  rmse 0.2530  df(ActivateDay.Avg) 0.0475  MAE 0.1801
-     train: epoch 27 loss 0.065671  rmse 0.1975  df(ActivateDay.Avg) 0.0024  MAE 0.1346
-               valid loss 0.035862  rmse 0.2606  df(ActivateDay.Avg) 0.1501  MAE 0.1908
-     train: epoch 28 loss 0.067466  rmse 0.2006  df(ActivateDay.Avg) 0.0048  MAE 0.1367
-               valid loss 0.033602  rmse 0.2516  df(ActivateDay.Avg) 0.0560  MAE 0.1783
-     train: epoch 29 loss 0.065832  rmse 0.1978  df(ActivateDay.Avg) 0.0066  MAE 0.1351
-               valid loss 0.033632  rmse 0.2516  df(ActivateDay.Avg) 0.0311  MAE 0.1816
-     train: epoch 30 loss 0.064429  rmse 0.1953  df(ActivateDay.Avg) 0.0079  MAE 0.1335
-               valid loss 0.034631  rmse 0.2553  df(ActivateDay.Avg) 0.0678  MAE 0.1847
-     train: epoch 31 loss 0.064316  rmse 0.1950  df(ActivateDay.Avg) 0.0014  MAE 0.1330
-               valid loss 0.036431  rmse 0.2629  df(ActivateDay.Avg) 0.2645  MAE 0.1998
-     train: epoch 32 loss 0.064332  rmse 0.1951  df(ActivateDay.Avg) 0.0099  MAE 0.1330
-               valid loss 0.034179  rmse 0.2534  df(ActivateDay.Avg) 0.0641  MAE 0.1730
-     train: epoch 33 loss 0.064895  rmse 0.1961  df(ActivateDay.Avg) 0.0051  MAE 0.1331
-               valid loss 0.032876  rmse 0.2483  df(ActivateDay.Avg) 0.0772  MAE 0.1698
-     train: epoch 34 loss 0.063577  rmse 0.1937  df(ActivateDay.Avg) 0.0066  MAE 0.1314
-               valid loss 0.033573  rmse 0.2507  df(ActivateDay.Avg) 0.0866  MAE 0.1730
-     train: epoch 35 loss 0.063315  rmse 0.1932  df(ActivateDay.Avg) 0.0049  MAE 0.1311
-               valid loss 0.034427  rmse 0.2546  df(ActivateDay.Avg) 0.0026  MAE 0.1808
-     train: epoch 36 loss 0.063109  rmse 0.1928  df(ActivateDay.Avg) 0.0017  MAE 0.1304
-               valid loss 0.033652  rmse 0.2512  df(ActivateDay.Avg) 0.0127  MAE 0.1768
-     train: epoch 37 loss 0.062577  rmse 0.1918  df(ActivateDay.Avg) 0.0076  MAE 0.1299
-               valid loss 0.034505  rmse 0.2550  df(ActivateDay.Avg) 0.0430  MAE 0.1801
-     train: epoch 38 loss 0.062365  rmse 0.1915  df(ActivateDay.Avg) 0.0098  MAE 0.1295
-               valid loss 0.034605  rmse 0.2554  df(ActivateDay.Avg) 0.0378  MAE 0.1806
-     train: epoch 39 loss 0.062210  rmse 0.1911  df(ActivateDay.Avg) 0.0068  MAE 0.1287
-               valid loss 0.033781  rmse 0.2519  df(ActivateDay.Avg) 0.0321  MAE 0.1801
-     train: epoch 40 loss 0.063134  rmse 0.1927  df(ActivateDay.Avg) 0.0018  MAE 0.1299
-               valid loss 0.033805  rmse 0.2520  df(ActivateDay.Avg) 0.0192  MAE 0.1746
-     train: epoch 41 loss 0.062570  rmse 0.1917  df(ActivateDay.Avg) 0.0039  MAE 0.1296
-               valid loss 0.034510  rmse 0.2550  df(ActivateDay.Avg) 0.0832  MAE 0.1825
-     train: epoch 42 loss 0.061315  rmse 0.1895  df(ActivateDay.Avg) 0.0125  MAE 0.1287
-               valid loss 0.034150  rmse 0.2534  df(ActivateDay.Avg) 0.0008  MAE 0.1751
-     train: epoch 43 loss 0.060766  rmse 0.1885  df(ActivateDay.Avg) 0.0056  MAE 0.1267
-               valid loss 0.033487  rmse 0.2506  df(ActivateDay.Avg) 0.0456  MAE 0.1708
-     train: epoch 44 loss 0.060914  rmse 0.1887  df(ActivateDay.Avg) 0.0067  MAE 0.1261
-               valid loss 0.033446  rmse 0.2505  df(ActivateDay.Avg) 0.0108  MAE 0.1743
-     train: epoch 45 loss 0.060754  rmse 0.1884  df(ActivateDay.Avg) 0.0090  MAE 0.1270
-               valid loss 0.035345  rmse 0.2585  df(ActivateDay.Avg) 0.1282  MAE 0.1871
-     train: epoch 46 loss 0.061858  rmse 0.1904  df(ActivateDay.Avg) 0.0055  MAE 0.1282
-               valid loss 0.034583  rmse 0.2555  df(ActivateDay.Avg) 0.0903  MAE 0.1780
-     train: epoch 47 loss 0.061584  rmse 0.1899  df(ActivateDay.Avg) 0.0006  MAE 0.1276
-               valid loss 0.034442  rmse 0.2547  df(ActivateDay.Avg) 0.0824  MAE 0.1814
-     train: epoch 48 loss 0.060837  rmse 0.1885  df(ActivateDay.Avg) 0.0067  MAE 0.1264
-               valid loss 0.035596  rmse 0.2590  df(ActivateDay.Avg) 0.0413  MAE 0.1829
-     train: epoch 49 loss 0.060273  rmse 0.1875  df(ActivateDay.Avg) 0.0096  MAE 0.1258
-               valid loss 0.033936  rmse 0.2521  df(ActivateDay.Avg) 0.1421  MAE 0.1715
-best_epoch: 17.0000
-  best_valid_rmse 0.2480  best_valid_df 0.0713  best_valid_MAE 0.1735 
-  best_rmse 0.2586  best_df 0.0841 best_MAE 0.1788
+      train: epoch 0 loss 0.352847  rmse 0.3275  df(ActivateDay.Avg) 0.2700  MAE 0.2456
+               valid loss 0.040114  rmse 0.2726  df(ActivateDay.Avg) 0.0287  MAE 0.2181
+                test loss 0.041914  rmse 0.2795  df(ActivateDay.Avg) 0.0069  MAE 0.2195
+      train: epoch 1 loss 0.113689  rmse 0.2665  df(ActivateDay.Avg) 0.0525  MAE 0.2123
+               valid loss 0.036711  rmse 0.2627  df(ActivateDay.Avg) 0.0699  MAE 0.2100
+                test loss 0.038006  rmse 0.2677  df(ActivateDay.Avg) 0.0443  MAE 0.2093
+      train: epoch 2 loss 0.104565  rmse 0.2557  df(ActivateDay.Avg) 0.0348  MAE 0.1958
+               valid loss 0.036771  rmse 0.2634  df(ActivateDay.Avg) 0.1892  MAE 0.1904
+      train: epoch 3 loss 0.098789  rmse 0.2481  df(ActivateDay.Avg) 0.0242  MAE 0.1876
+               valid loss 0.035940  rmse 0.2604  df(ActivateDay.Avg) 0.0616  MAE 0.2034
+                test loss 0.037514  rmse 0.2665  df(ActivateDay.Avg) 0.0328  MAE 0.2036
+      train: epoch 4 loss 0.094401  rmse 0.2421  df(ActivateDay.Avg) 0.0257  MAE 0.1813
+               valid loss 0.035668  rmse 0.2594  df(ActivateDay.Avg) 0.1050  MAE 0.2026
+                test loss 0.037167  rmse 0.2652  df(ActivateDay.Avg) 0.0757  MAE 0.2032
+      train: epoch 5 loss 0.090747  rmse 0.2370  df(ActivateDay.Avg) 0.0183  MAE 0.1748
+               valid loss 0.035113  rmse 0.2572  df(ActivateDay.Avg) 0.0204  MAE 0.1897
+                test loss 0.036985  rmse 0.2645  df(ActivateDay.Avg) 0.0403  MAE 0.1920
+      train: epoch 6 loss 0.087833  rmse 0.2328  df(ActivateDay.Avg) 0.0195  MAE 0.1705
+               valid loss 0.035675  rmse 0.2596  df(ActivateDay.Avg) 0.0688  MAE 0.1981
+      train: epoch 7 loss 0.085555  rmse 0.2294  df(ActivateDay.Avg) 0.0116  MAE 0.1670
+               valid loss 0.035538  rmse 0.2590  df(ActivateDay.Avg) 0.0428  MAE 0.1955
+      train: epoch 8 loss 0.082383  rmse 0.2247  df(ActivateDay.Avg) 0.0140  MAE 0.1621
+               valid loss 0.035747  rmse 0.2600  df(ActivateDay.Avg) 0.0882  MAE 0.1999
+      train: epoch 9 loss 0.080678  rmse 0.2221  df(ActivateDay.Avg) 0.0155  MAE 0.1595
+               valid loss 0.035345  rmse 0.2584  df(ActivateDay.Avg) 0.0187  MAE 0.1883
+     train: epoch 10 loss 0.078508  rmse 0.2188  df(ActivateDay.Avg) 0.0104  MAE 0.1560
+               valid loss 0.035933  rmse 0.2607  df(ActivateDay.Avg) 0.0676  MAE 0.1844
+     train: epoch 11 loss 0.077392  rmse 0.2171  df(ActivateDay.Avg) 0.0165  MAE 0.1541
+               valid loss 0.036904  rmse 0.2646  df(ActivateDay.Avg) 0.0681  MAE 0.1964
+     train: epoch 12 loss 0.076068  rmse 0.2150  df(ActivateDay.Avg) 0.0112  MAE 0.1520
+               valid loss 0.035647  rmse 0.2596  df(ActivateDay.Avg) 0.0252  MAE 0.1862
+     train: epoch 13 loss 0.074967  rmse 0.2132  df(ActivateDay.Avg) 0.0004  MAE 0.1493
+               valid loss 0.037909  rmse 0.2686  df(ActivateDay.Avg) 0.1043  MAE 0.1982
+     train: epoch 14 loss 0.073485  rmse 0.2109  df(ActivateDay.Avg) 0.0084  MAE 0.1467
+               valid loss 0.037545  rmse 0.2673  df(ActivateDay.Avg) 0.1080  MAE 0.1959
+     train: epoch 15 loss 0.073017  rmse 0.2101  df(ActivateDay.Avg) 0.0081  MAE 0.1463
+               valid loss 0.035913  rmse 0.2606  df(ActivateDay.Avg) 0.1133  MAE 0.1804
+     train: epoch 16 loss 0.072231  rmse 0.2089  df(ActivateDay.Avg) 0.0006  MAE 0.1443
+               valid loss 0.035412  rmse 0.2589  df(ActivateDay.Avg) 0.0330  MAE 0.1874
+     train: epoch 17 loss 0.071925  rmse 0.2084  df(ActivateDay.Avg) 0.0093  MAE 0.1448
+               valid loss 0.035686  rmse 0.2597  df(ActivateDay.Avg) 0.1519  MAE 0.1754
+     train: epoch 18 loss 0.070116  rmse 0.2054  df(ActivateDay.Avg) 0.0029  MAE 0.1418
+               valid loss 0.035266  rmse 0.2583  df(ActivateDay.Avg) 0.0036  MAE 0.1871
+     train: epoch 19 loss 0.069640  rmse 0.2047  df(ActivateDay.Avg) 0.0037  MAE 0.1413
+               valid loss 0.035781  rmse 0.2603  df(ActivateDay.Avg) 0.0207  MAE 0.1849
+     train: epoch 20 loss 0.069008  rmse 0.2036  df(ActivateDay.Avg) 0.0113  MAE 0.1406
+               valid loss 0.034815  rmse 0.2562  df(ActivateDay.Avg) 0.1377  MAE 0.1726
+                test loss 0.037512  rmse 0.2666  df(ActivateDay.Avg) 0.1574  MAE 0.1772
+     train: epoch 21 loss 0.068226  rmse 0.2023  df(ActivateDay.Avg) 0.0064  MAE 0.1394
+               valid loss 0.035469  rmse 0.2589  df(ActivateDay.Avg) 0.1398  MAE 0.1770
+     train: epoch 22 loss 0.068249  rmse 0.2024  df(ActivateDay.Avg) 0.0013  MAE 0.1388
+               valid loss 0.034468  rmse 0.2551  df(ActivateDay.Avg) 0.0232  MAE 0.1817
+                test loss 0.036623  rmse 0.2634  df(ActivateDay.Avg) 0.0009  MAE 0.1848
+     train: epoch 23 loss 0.068059  rmse 0.2021  df(ActivateDay.Avg) 0.0049  MAE 0.1394
+               valid loss 0.034904  rmse 0.2570  df(ActivateDay.Avg) 0.1092  MAE 0.1866
+     train: epoch 24 loss 0.067514  rmse 0.2012  df(ActivateDay.Avg) 0.0057  MAE 0.1377
+               valid loss 0.034840  rmse 0.2567  df(ActivateDay.Avg) 0.1105  MAE 0.1901
+     train: epoch 25 loss 0.066832  rmse 0.2000  df(ActivateDay.Avg) 0.0067  MAE 0.1372
+               valid loss 0.034246  rmse 0.2542  df(ActivateDay.Avg) 0.0514  MAE 0.1792
+                test loss 0.036435  rmse 0.2627  df(ActivateDay.Avg) 0.0726  MAE 0.1820
+     train: epoch 26 loss 0.065560  rmse 0.1978  df(ActivateDay.Avg) 0.0107  MAE 0.1357
+               valid loss 0.035177  rmse 0.2578  df(ActivateDay.Avg) 0.1925  MAE 0.1738
+     train: epoch 27 loss 0.066367  rmse 0.1992  df(ActivateDay.Avg) 0.0045  MAE 0.1362
+               valid loss 0.034449  rmse 0.2551  df(ActivateDay.Avg) 0.0308  MAE 0.1823
+     train: epoch 28 loss 0.066682  rmse 0.1998  df(ActivateDay.Avg) 0.0006  MAE 0.1359
+               valid loss 0.034523  rmse 0.2554  df(ActivateDay.Avg) 0.0929  MAE 0.1836
+     train: epoch 29 loss 0.066773  rmse 0.1999  df(ActivateDay.Avg) 0.0041  MAE 0.1366
+               valid loss 0.032769  rmse 0.2482  df(ActivateDay.Avg) 0.0579  MAE 0.1722
+                test loss 0.035217  rmse 0.2579  df(ActivateDay.Avg) 0.0757  MAE 0.1768
+     train: epoch 30 loss 0.065206  rmse 0.1972  df(ActivateDay.Avg) 0.0041  MAE 0.1351
+               valid loss 0.033985  rmse 0.2532  df(ActivateDay.Avg) 0.0410  MAE 0.1769
+     train: epoch 31 loss 0.065147  rmse 0.1972  df(ActivateDay.Avg) 0.0021  MAE 0.1337
+               valid loss 0.035819  rmse 0.2607  df(ActivateDay.Avg) 0.1397  MAE 0.1951
+     train: epoch 32 loss 0.064558  rmse 0.1961  df(ActivateDay.Avg) 0.0104  MAE 0.1336
+               valid loss 0.033799  rmse 0.2524  df(ActivateDay.Avg) 0.0356  MAE 0.1747
+     train: epoch 33 loss 0.064230  rmse 0.1955  df(ActivateDay.Avg) 0.0005  MAE 0.1322
+               valid loss 0.036906  rmse 0.2651  df(ActivateDay.Avg) 0.2245  MAE 0.1997
+     train: epoch 34 loss 0.065228  rmse 0.1973  df(ActivateDay.Avg) 0.0093  MAE 0.1345
+               valid loss 0.034708  rmse 0.2563  df(ActivateDay.Avg) 0.1326  MAE 0.1871
+     train: epoch 35 loss 0.064161  rmse 0.1954  df(ActivateDay.Avg) 0.0018  MAE 0.1324
+               valid loss 0.034826  rmse 0.2567  df(ActivateDay.Avg) 0.0618  MAE 0.1872
+     train: epoch 36 loss 0.063666  rmse 0.1946  df(ActivateDay.Avg) 0.0061  MAE 0.1313
+               valid loss 0.033786  rmse 0.2525  df(ActivateDay.Avg) 0.0316  MAE 0.1791
+     train: epoch 37 loss 0.064238  rmse 0.1956  df(ActivateDay.Avg) 0.0058  MAE 0.1327
+               valid loss 0.034207  rmse 0.2541  df(ActivateDay.Avg) 0.0785  MAE 0.1764
+     train: epoch 38 loss 0.063559  rmse 0.1944  df(ActivateDay.Avg) 0.0050  MAE 0.1315
+               valid loss 0.034754  rmse 0.2564  df(ActivateDay.Avg) 0.0950  MAE 0.1834
+     train: epoch 39 loss 0.063637  rmse 0.1945  df(ActivateDay.Avg) 0.0046  MAE 0.1316
+               valid loss 0.035621  rmse 0.2600  df(ActivateDay.Avg) 0.0922  MAE 0.1890
+     train: epoch 40 loss 0.064871  rmse 0.1967  df(ActivateDay.Avg) 0.0050  MAE 0.1324
+               valid loss 0.034539  rmse 0.2556  df(ActivateDay.Avg) 0.0856  MAE 0.1848
+     train: epoch 41 loss 0.063002  rmse 0.1933  df(ActivateDay.Avg) 0.0123  MAE 0.1313
+               valid loss 0.035348  rmse 0.2589  df(ActivateDay.Avg) 0.1399  MAE 0.1850
+     train: epoch 42 loss 0.064399  rmse 0.1959  df(ActivateDay.Avg) 0.0012  MAE 0.1323
+               valid loss 0.035163  rmse 0.2577  df(ActivateDay.Avg) 0.2283  MAE 0.1702
+     train: epoch 43 loss 0.065422  rmse 0.1976  df(ActivateDay.Avg) 0.0016  MAE 0.1344
+               valid loss 0.033821  rmse 0.2525  df(ActivateDay.Avg) 0.0420  MAE 0.1745
+     train: epoch 44 loss 0.062597  rmse 0.1926  df(ActivateDay.Avg) 0.0013  MAE 0.1303
+               valid loss 0.034995  rmse 0.2574  df(ActivateDay.Avg) 0.1126  MAE 0.1828
+     train: epoch 45 loss 0.062718  rmse 0.1929  df(ActivateDay.Avg) 0.0092  MAE 0.1298
+               valid loss 0.035188  rmse 0.2582  df(ActivateDay.Avg) 0.1215  MAE 0.1883
+     train: epoch 46 loss 0.062712  rmse 0.1928  df(ActivateDay.Avg) 0.0049  MAE 0.1298
+               valid loss 0.035523  rmse 0.2596  df(ActivateDay.Avg) 0.1515  MAE 0.1906
+     train: epoch 47 loss 0.062948  rmse 0.1933  df(ActivateDay.Avg) 0.0031  MAE 0.1299
+               valid loss 0.034461  rmse 0.2553  df(ActivateDay.Avg) 0.1054  MAE 0.1851
+     train: epoch 48 loss 0.062196  rmse 0.1920  df(ActivateDay.Avg) 0.0098  MAE 0.1295
+               valid loss 0.034247  rmse 0.2541  df(ActivateDay.Avg) 0.1447  MAE 0.1714
+     train: epoch 49 loss 0.062648  rmse 0.1928  df(ActivateDay.Avg) 0.0049  MAE 0.1296
+               valid loss 0.034352  rmse 0.2547  df(ActivateDay.Avg) 0.0671  MAE 0.1784
+best_epoch: 30.0000
+  best_valid_rmse 0.2482  best_valid_df 0.0579  best_valid_MAE 0.1722 
+  best_rmse 0.2579  best_df 0.0757 best_MAE 0.1768
