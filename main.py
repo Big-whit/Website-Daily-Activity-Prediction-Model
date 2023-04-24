@@ -41,8 +41,8 @@ def main():
     parser.add_argument('--max_iter', type=int, default=50, help='max_iter e.g. 100 200 ...')
     # dataset
     parser.add_argument('--DataSet', type=str, default='kwai')
-    parser.add_argument('--day', type=int, default=23)
-    parser.add_argument('--future_day', type=int, default=7)
+    parser.add_argument('--day', type=int, default=7)
+    parser.add_argument('--future_day', type=int, default=23)
     parser.add_argument('--data_dilution_ratio', type=float, default=1.0)
     parser.add_argument('--whether_process', type=bool, default=False)
     # loss
@@ -53,10 +53,6 @@ def main():
     parser.add_argument('--model_name', type=str, default='MyModel')
     # bce_weight
     parser.add_argument('--bce_weight', type=float, default=0.05)
-    # MyModel parameters
-    parser.add_argument('--multi_task_enable', type=int, default=0)
-    parser.add_argument('--fine_grained', type=int, default=0)
-
     params = parser.parse_args()
     # GPU settings
     device = torch.device("cuda:" + str(params.cuda) if torch.cuda.is_available() else "cpu")

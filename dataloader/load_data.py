@@ -27,8 +27,6 @@ create_feature_tag() function's purpose:
         'act_feat_num': 6,
     }
 """
-
-
 def create_feature_tag(past_day=23, future_day=7, data_name='kddcup2015'):
     global feature
     if data_name == 'kwai':
@@ -67,8 +65,6 @@ load_data() function's purpose:
     label(titles): ['user_id', 'day1_1', 'day1_2',..., 'day30_6', 'truth', 'total_activity_day']
     df_time_split(titles): ['year1', 'month1', 'day1', 'week1',..., 'year30', 'month30', 'day30', 'week30']
 """
-
-
 def load_data(past_day, future_day, data_name, data_dilution_ratio):
     global feature
     df_u = pd.DataFrame()
@@ -134,7 +130,6 @@ def load_data(past_day, future_day, data_name, data_dilution_ratio):
     df_a.sort_values(feature['id_name'], inplace=True)
     df_u.sort_values(feature['id_name'], inplace=True)
     label.sort_values(feature['id_name'], inplace=True)
-    user_id = label[feature['id_name']]
 
     # Get time information and split it into year、month、day、week.
     file_name = data_name + '_time.csv'
@@ -149,7 +144,7 @@ def load_data(past_day, future_day, data_name, data_dilution_ratio):
         df_time_split['day' + str(i)] = pd.to_datetime(df_time["day" + str(i)]).dt.day
         df_time_split['week' + str(i)] = df_time["week" + str(i)]
 
-    return user_id, df_u, df_a, label, df_time_split
+    return df_u, df_a, label, df_time_split
 
 
 """
@@ -157,8 +152,6 @@ data_parse() function's purpose:
     1 - Transform discrete user profile information into continuous information for embedding.
     2 - Return total user image feature dimension.
 """
-
-
 def data_parse(df_u):
     all_data = df_u
     # feature dimension(total fields)
@@ -187,8 +180,6 @@ def data_parse(df_u):
 user_activate_day_count() function's purpose:
     1 - Count the number of people who are active from 0 ~ future_day in the future future_day
 """
-
-
 def user_activate_day_count(future_day, label):
     day_list = []
     for i in range(0, future_day + 1):
@@ -199,9 +190,8 @@ def user_activate_day_count(future_day, label):
 
 
 class DataSet(Dataset):
-    def __init__(self, user_id, ui, uv, ai, av, y, time):
+    def __init__(self, ui, uv, ai, av, y, time):
         super(Dataset, self).__init__()
-        self.user_id = user_id
         self.ui = ui
         self.uv = uv
         self.ai = ai
@@ -211,8 +201,7 @@ class DataSet(Dataset):
         self.len = ui.shape[0]
 
     def __getitem__(self, item):
-        return self.user_id[item], self.ui[item], self.uv[item], self.ai[item], self.av[item], self.y[item], self.time[
-            item],
+        return self.ui[item], self.uv[item], self.ai[item], self.av[item], self.y[item], self.time[item],
 
     def __len__(self):
         return self.len
@@ -225,7 +214,7 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
     data_dict = ['ui_train', 'uv_train', 'ai_train', 'av_train', 'y_train', 'time_train',
                  'ui_valid', 'uv_valid', 'ai_valid', 'av_valid', 'y_valid', 'time_valid',
                  'ui_test', 'uv_test', 'ai_test', 'av_test', 'y_test', 'time_test',
-                 'day_numpy', 'params', 'user_id_train', 'user_id_valid', 'user_id_test']
+                 'day_numpy', 'params']
     save_path = './data/' + data_name + '/model_input_data/'
     # For example: _23_7_1_0.1
     save_name = '_' + str(past_day) + '_' + str(future_day) + '_' + str(params['seed']) + '_' + str(data_dilution_ratio)
@@ -255,24 +244,19 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
         day_numpy = np.load(save_path + data_dict[18] + save_name + '.npy')
         params_load = np.load(save_path + data_dict[19] + save_name + '.npy', allow_pickle=True).item()
 
-        user_id_train = torch.load(save_path + data_dict[20] + save_name + '.pt')
-        user_id_valid = torch.load(save_path + data_dict[21] + save_name + '.pt')
-        user_id_test = torch.load(save_path + data_dict[22] + save_name + '.pt')
-
         params_load.update(params)
         params = params_load
         print("Model input data loaded")
     else:
         create_feature_tag(past_day, future_day, data_name)
         print('Feature tags create successfully')
-        user_id, df_u, df_a, label, time_split = load_data(past_day, future_day, data_name, data_dilution_ratio)
+        df_u, df_a, label, time_split = load_data(past_day, future_day, data_name, data_dilution_ratio)
         print('Load df_a、df_u、label、time_split over')
 
         u_feat_dim, u_data_indices, u_data_value = data_parse(df_u)
         print('The user images are serialized')
 
         # Turn dataframe → array
-        user_id = np.asarray(user_id[feature['id_name']], dtype=int)
         ui = np.asarray(u_data_indices.loc[df_u.index], dtype=int)
         uv = np.asarray(u_data_value.loc[df_u.index], dtype=np.float32)
         params['u_feat_size'] = u_feat_dim
@@ -293,7 +277,6 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
         # np.save(save_path + 'y' + save_name + '.npy', y)
 
         # Turn array → tensor
-        user_id = torch.tensor(user_id)
         ui = torch.tensor(ui)
         uv = torch.tensor(uv)
         ai = torch.tensor(ai)
@@ -308,7 +291,6 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
         np.random.shuffle(indices)
         split_1 = int(0.6 * data_num)
         split_2 = int(0.8 * data_num)
-        user_id_train, user_id_valid, user_id_test = user_id[indices[:split_1]], user_id[indices[split_1:split_2]], user_id[indices[split_2:]]
         ui_train, ui_valid, ui_test = ui[indices[:split_1]], ui[indices[split_1:split_2]], ui[indices[split_2:]]
         uv_train, uv_valid, uv_test = uv[indices[:split_1]], uv[indices[split_1:split_2]], uv[indices[split_2:]]
         ai_train, ai_valid, ai_test = ai[indices[:split_1]], ai[indices[split_1:split_2]], ai[indices[split_2:]]
@@ -322,7 +304,7 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
         # and use it to analyze the long-tail effect.
         label = label.iloc[indices[:split_1]]
         day_numpy = user_activate_day_count(future_day, label)
-
+        
         # Saving model input data
         torch.save(ui_train, save_path + data_dict[0] + save_name + '.pt')
         torch.save(uv_train, save_path + data_dict[1] + save_name + '.pt')
@@ -347,10 +329,6 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
 
         np.save(save_path + data_dict[18] + save_name + '.npy', day_numpy)
         np.save(save_path + data_dict[19] + save_name + '.npy', params)
-
-        torch.save(user_id_train, save_path + data_dict[20] + save_name + '.pt')
-        torch.save(user_id_valid, save_path + data_dict[21] + save_name + '.pt')
-        torch.save(user_id_test, save_path + data_dict[22] + save_name + '.pt')
         print('The model input data is saved')
 
     # packaged dataset
@@ -358,9 +336,9 @@ def get_data_loader(batch_size=64, params={}, data_name='kwai'):
     # ai_train、av_train: [user_num, past_day, action_feature_num]
     # time_train: [user_num, past_day + future_day, 4]
     # y: [user_num, truth_rate + total_activity_day + day1_1 + ... + dayN_feature_num]
-    train_dataset = DataSet(user_id_train, ui_train, uv_train, ai_train, av_train, y_train, time_train)
-    valid_dataset = DataSet(user_id_valid, ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
-    test_dataset = DataSet(user_id_test, ui_test, uv_test, ai_test, av_test, y_test, time_test)
+    train_dataset = DataSet(ui_train, uv_train, ai_train, av_train, y_train, time_train)
+    valid_dataset = DataSet(ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
+    test_dataset = DataSet(ui_test, uv_test, ai_test, av_test, y_test, time_test)
     train_set = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     valid_set = DataLoader(valid_dataset, batch_size=batch_size, drop_last=True)
     test_set = DataLoader(test_dataset, batch_size=batch_size, drop_last=True)
