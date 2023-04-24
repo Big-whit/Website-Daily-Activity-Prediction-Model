@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import datetime
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from dataloader.load_data import DataSet
 import matplotlib.pyplot as plt
 
@@ -14,26 +14,6 @@ feature = {
     'feat_num': 6,
 }
 params = {}
-
-
-class DataSet(Dataset):
-    def __init__(self, user_id, ui, uv, ai, av, y, time):
-        super(Dataset, self).__init__()
-        self.user_id = user_id
-        self.ui = ui
-        self.uv = uv
-        self.ai = ai
-        self.av = av
-        self.y = y
-        self.time = time
-        self.len = ui.shape[0]
-
-    def __getitem__(self, item):
-        return self.user_id[item], self.ui[item], self.uv[item], self.ai[item], self.av[item], self.y[item], self.time[
-            item],
-
-    def __len__(self):
-        return self.len
 
 
 def dataparse(df_u):
@@ -103,7 +83,6 @@ def dataloader():
     label = pd.read_csv(label_file_path + file_name)
     label = label[feature['id_name'] + feature['truth_tag']]
     label = pd.merge(df_id, label, on=feature['id_name'], how='left')
-    user_id = label[feature['id_name']]
 
     file_name = data_name + '_time.csv'
     df_time = pd.read_csv(time_file_path + file_name)
@@ -116,24 +95,6 @@ def dataloader():
         df_time_split['month' + str(i)] = pd.to_datetime(df_time["day" + str(i)]).dt.month
         df_time_split['day' + str(i)] = pd.to_datetime(df_time["day" + str(i)]).dt.day
         df_time_split['week' + str(i)] = df_time["week" + str(i)]
-
-    # print(user_id)
-    """
-            user_id
-    0       744025
-    1      1270299
-    2       571220
-    3      1308501
-    4       745554
-    ...        ...
-    37441   845775
-    37442  1050025
-    37443   990897
-    37444   126272
-    37445   265870
-    
-    [37446 rows x 1 columns]
-    """
 
     # print(df_a)
     """
@@ -202,7 +163,6 @@ def dataloader():
 
     u_feat_dim, u_data_index, u_data_value = dataparse(df_u)
 
-    user_id = np.asarray(user_id[feature['id_name']], dtype=int)
     ui = np.asarray(u_data_index.loc[df_u.index], dtype=int)
     uv = np.asarray(u_data_value.loc[df_u.index], dtype=np.float32)
     params["u_feat_size"] = u_feat_dim
@@ -218,7 +178,6 @@ def dataloader():
     time_npy = time_npy.reshape((-1, past_day + future_day, 4))
     y = np.asarray(label[feature['truth_tag']], dtype=np.float32)
 
-    # print(user_id.shape)
     # print(ui.shape)
     # print(uv.shape)
     # print(ai.shape)
@@ -226,7 +185,6 @@ def dataloader():
     # print(y.shape)
     # print(time_npy.shape)
     """
-    (37446, 1)
     (37446, 2)
     (37446, 2)
     (149784, 6)
@@ -235,7 +193,6 @@ def dataloader():
     (37446, 30, 4)
     """
 
-    user_id = torch.tensor(user_id)
     ui = torch.tensor(ui)
     uv = torch.tensor(uv)
     ai = torch.tensor(ai)
@@ -249,8 +206,6 @@ def dataloader():
     np.random.shuffle(indices)
     split_1 = int(0.6 * data_num)
     split_2 = int(0.8 * data_num)
-    user_id_train, user_id_valid, user_id_test = user_id[indices[:split_1]], user_id[indices[split_1:split_2]], user_id[
-        indices[split_2:]]
     ui_train, ui_valid, ui_test = ui[indices[:split_1]], ui[indices[split_1:split_2]], ui[indices[split_2:]]
     uv_train, uv_valid, uv_test = uv[indices[:split_1]], uv[indices[split_1:split_2]], uv[indices[split_2:]]
     ai_train, ai_valid, ai_test = ai[indices[:split_1]], ai[indices[split_1:split_2]], ai[indices[split_2:]]
@@ -259,7 +214,6 @@ def dataloader():
                                         time[indices[split_2:]]
     y_train, y_valid, y_test = y[indices[:split_1]], y[indices[split_1:split_2]], y[indices[split_2:]]
 
-    # print(user_id_train.shape)
     # print(ui_train.shape)
     # print(uv_train.shape)
     # print(ai_train.shape)
@@ -267,9 +221,7 @@ def dataloader():
     # print(time_train.shape)
     # print(y_train.shape)
 
-    """
-    torch.Size([22467, 1])
-    torch.Size([22467, 2])
+    """torch.Size([22467, 2])
     torch.Size([22467, 2])
     torch.Size([22467, 6])
     torch.Size([22467, 6])
@@ -279,9 +231,9 @@ def dataloader():
     22467 = 37446 * 0.6
     """
 
-    train_dataset = DataSet(user_id_train, ui_train, uv_train, ai_train, av_train, y_train, time_train)
-    valid_dataset = DataSet(user_id_valid, ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
-    test_dataset = DataSet(user_id_test, ui_test, uv_test, ai_test, av_test, y_test, time_test)
+    train_dataset = DataSet(ui_train, uv_train, ai_train, av_train, y_train, time_train)
+    valid_dataset = DataSet(ui_valid, uv_valid, ai_valid, av_valid, y_valid, time_valid)
+    test_dataset = DataSet(ui_test, uv_test, ai_test, av_test, y_test, time_test)
     train_set = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     valid_set = DataLoader(valid_dataset, batch_size=batch_size, drop_last=True)
     test_set = DataLoader(test_dataset, batch_size=batch_size, drop_last=True)
@@ -348,24 +300,44 @@ def test_for_model_and_run():
     print(filtered_pred)
 
 
+# **************************************** For draw.py **************************************** #
+def draw_result():
+    model_name = ['CFIN', 'CLSA', 'LSCNN', 'DPCNN', 'LR', 'RNN']
+    # kwai_23_7
+    # rmse = [0.27336, 0.25374, 0.23214, 0.23450, 0.52988, 0.23440]
+    # df = [0.05942, 0.02866, 0.05132, 0.01938, 0.07954, 0.03372]
+    # mae = [0.19674, 0.17874, 0.16510, 0.16286, 0.24940, 0.16644]
+
+    # kddcup2015_23_7
+    rmse = [0.12244, 0.11458, 0.10908, 0.12224, 0.13368, 0.12236]
+    df = [0.06394, 0.04886, 0.04098, 0.01650, 0.09774, 0.03802]
+    mae = [0.08476, 0.06450, 0.06140, 0.08146, 0.09090, 0.07170]
+
+    plt.plot(model_name, rmse, 'r', marker='.', markersize=4, label='RMSE')
+    plt.plot(model_name, df, 'g', marker='*', markersize=4, label='df')
+    plt.plot(model_name, mae, 'b', marker='X', markersize=4, label='MAE')
+    plt.xlabel("Model Name")
+    plt.ylabel("Value")
+    plt.title("Kddcup2015 dataset, use 23 to predict 7")
+    plt.legend(loc="upper left")
+    for x1, y1 in zip(model_name, rmse):
+        plt.text(x1, y1, str(y1), ha='center', va='bottom', fontsize=10)
+    for x1, y1 in zip(model_name, df):
+        plt.text(x1, y1, str(y1), ha='center', va='bottom', fontsize=10)
+    for x1, y1 in zip(model_name, mae):
+        plt.text(x1, y1, str(y1), ha='center', va='bottom', fontsize=10)
+    plt.show()
+
+
 # ****************************************************************************************** #
 if __name__ == '__main__':
-    user_ids = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-    user_ids = user_ids.astype(int)
-    print(user_ids)
-
-    # y_preds_1 = torch.rand(7, 2, 3)
-    # print(y_preds_1)
-    # y_preds_1 = np.asarray(y_preds_1)
-    #
-    # y_preds_1 = y_preds_1.reshape(len(y_preds_1), -1)
-    # y_preds_1 = np.round(y_preds_1, 5)
-    # print(y_preds_1)
-    #
-    # column = []
-    # for i in range(2):
-    #     for j in range(3):
-    #         column.append('day_' + str(i + 1) + '_' + str(j))
-    #
-    # df_task_3 = pd.DataFrame(data=y_preds_1[0:, 0:], columns=column)
-    # print(df_task_3)
+    a = np.load('./kwai_MyModel_23_7_truth_1.npy', allow_pickle=True)
+    print(a.shape)
+    print(a[1])
+    print(a[2])
+    print(a[3])
+    print(a[4])
+    print(a[5])
+    print(a[6])
+    print(a[7])
+    print(a[8])
