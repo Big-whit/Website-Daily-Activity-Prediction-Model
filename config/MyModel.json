@@ -1,7 +1,7 @@
 {
   "model_name": "MyModel",
   "multi_task_enable": 0,
-  "fine_grained": 1,
+  "fine_grained": 0,
   "week_num": 7,
   "day_num": 30,
   "period_num": 2,
