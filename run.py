@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import pandas as pd
-import wandb
 import torch.nn.functional as F
 
 """
@@ -41,7 +40,7 @@ cal_save_result() function's purpose:
 
     df_task_1: Save the probability that whether the user in test set is active in the next 'future_day' days.
     df_task_2: Save the probability that whether the user in test set is active in each 'future_day' days.
-    df_task_3: Save the probability that whether the user in test set is active in each 'future_day' each action.
+    df_task_2(fine-grained): Save the probability that whether the user in test set is active in each 'future_day' each action.
 """
 def cal_save_result(model_params, model_name, predict_results, save_path):
     if model_name == 'MyModel':
@@ -63,27 +62,21 @@ def cal_save_result(model_params, model_name, predict_results, save_path):
     df_task_1['active_or_not'] = y_preds_1
     df_task_1.to_csv(save_path + file_name + '_pred_task_1.csv', index=False)
 
+    column = []
     if model_name == 'MyModel' and model_params['multi_task_enable'] == 1:
         if model_params['fine_grained'] == 0:
-            column = []
             for i in range(model_params['future_day']):
                 column.append('day_' + str(i + 1) + '_active_or_not')
-            y_preds_2 = y_preds_2.reshape(len(y_preds_2), -1)
-            df_task_2 = pd.DataFrame(data=y_preds_2[0:, 0:], columns=column)
-            df_task_2['user_id'] = user_ids
-            df_task_2.insert(0, 'user_id', df_task_2.pop('user_id'))
-            df_task_2.to_csv(save_path + file_name + '_pred_task_2.csv', index=False)
-
         elif model_params['fine_grained'] == 1:
-            column = []
             for i in range(model_params['future_day']):
                 for j in range(len(y_preds_2[0][0])):
                     column.append('day_' + str(i + 1) + '_' + str(j))
-            y_preds_2 = y_preds_2.reshape(len(y_preds_2), -1)
-            df_task_3 = pd.DataFrame(data=y_preds_2[0:, 0:], columns=column)
-            df_task_3['user_id'] = user_ids
-            df_task_3.insert(0, 'user_id', df_task_3.pop('user_id'))
-            df_task_3.to_csv(save_path + file_name + '_pred_task_2.csv', index=False)
+
+        y_preds_2 = y_preds_2.reshape(len(y_preds_2), -1)
+        df_task_2 = pd.DataFrame(data=y_preds_2[0:, 0:], columns=column)
+        df_task_2['user_id'] = user_ids
+        df_task_2.insert(0, 'user_id', df_task_2.pop('user_id'))
+        df_task_2.to_csv(save_path + file_name + '_pred_task_2.csv', index=False)
 
 
 def run(epoch,
