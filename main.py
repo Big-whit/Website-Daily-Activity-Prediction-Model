@@ -138,7 +138,7 @@ def main():
 
     # wandb
     if model_params['use_wandb']:
-        init_wandb('WDAPM', 'Zikai Li', model_params, '34505f6e3ffacfbcb4aa26f7af20171b3c31b63a')
+        init_wandb('Website-Daily-Activity-Prediction-Model', 'Big-white', model_params, '34505f6e3ffacfbcb4aa26f7af20171b3c31b63a')
         wandb.watch(model, log='all')
 
     # best result
