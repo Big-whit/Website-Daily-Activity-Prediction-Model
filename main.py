@@ -1,6 +1,7 @@
 import torch
 import argparse
 import json
+import wandb
 from data_process.kwai_process import create_file_by_data as kwai_process_data
 from data_process.kddcup2015_process import create_file_by_data as kddcup2015_process_data
 from dataloader.load_data import get_data_loader
@@ -30,32 +31,59 @@ def load_model_param(config_file):
     return model_param
 
 
+def init_wandb(project_name, user_name, model_params, api_key):
+    wandb.login(key=api_key)
+    wandb.init(project=project_name, name=user_name)
+    wandb.watch_called = False
+    config = wandb.config
+
+    config.seed = model_params['seed']
+    config.batch_size = model_params['batch_size']
+    config.learning_rate = model_params['learning_rate']
+    config.weight_decay = model_params['weight_decay']
+    config.max_iter = model_params['max_iter']
+    config.DataSet = model_params['DataSet']
+    config.day = model_params['day']
+    config.future_day = model_params['future_day']
+    config.data_dilution_ratio = model_params['data_dilution_ratio']
+    config.whether_process = model_params['whether_process']
+    config.loss_func = model_params['loss_func']
+    config.cuda = model_params['cuda']
+    config.model_name = model_params['model_name']
+    config.bce_weight = model_params['bce_weight']
+    config.multi_task_enable = model_params['multi_task_enable']
+    config.fine_grained = model_params['fine_grained']
+
+
 def main():
     # Namespace of Hyper-parameter
     parser = argparse.ArgumentParser()
     # training process
-    parser.add_argument('--seed', type=int, default=1)
+    parser.add_argument('--seed', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=64, help='batch_size e.g. 32 64')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate e.g. 0.001 0.01')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+    parser.add_argument('--weight_decay', type=float, default=1e-5, help='weight decay e.g. 1e-5 5e-5')
     parser.add_argument('--max_iter', type=int, default=50, help='max_iter e.g. 100 200 ...')
     # dataset
-    parser.add_argument('--DataSet', type=str, default='kwai')
-    parser.add_argument('--day', type=int, default=23)
-    parser.add_argument('--future_day', type=int, default=7)
+    parser.add_argument('--DataSet', type=str, default='kwai', help='dataset\'s name')
+    parser.add_argument('--day', type=int, default=23, help='past day')
+    parser.add_argument('--future_day', type=int, default=7, help='future day')
     parser.add_argument('--data_dilution_ratio', type=float, default=1.0)
-    parser.add_argument('--whether_process', type=bool, default=False)
+    parser.add_argument('--whether_process', type=bool, default=False, help='Whether to process dataset')
     # loss
     parser.add_argument('--loss_func', type=str, default='MSE')
     # gpu
     parser.add_argument('--cuda', type=int, default=0)
-    # Model
-    parser.add_argument('--model_name', type=str, default='CFIN')
+    # model
+    parser.add_argument('--model_name', type=str, default='LSCNN')
     # bce_weight
     parser.add_argument('--bce_weight', type=float, default=0.05)
     # MyModel parameters
-    parser.add_argument('--multi_task_enable', type=int, default=0)
-    parser.add_argument('--fine_grained', type=int, default=0)
+    parser.add_argument('--multi_task_enable', type=int, default=0, help='Enable multitask prediction, 0 means not enable')
+    parser.add_argument('--fine_grained', type=int, default=0, help='Enable fine-grained, 0 means not enable')
+    # other
+    parser.add_argument('--use_wandb', type=bool, default=False, help='Whether to use wandb, True means use')
+    parser.add_argument('--save_result', type=bool, default=False, help='Whether to save prediction results, True means save')
 
     params = parser.parse_args()
     # GPU settings
@@ -82,10 +110,9 @@ def main():
         y: [user_num, truth + total_activity_day + day1_1 + ... + dayN_feature_num]
     """
     if params.DataSet == 'kwai':
-        train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param, data_name='kwai')
+        train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param, 'kwai')
     elif params.DataSet == 'kddcup2015':
-        train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param,
-                                                                           data_name='kddcup2015')
+        train_set, valid_set, test_set, day_numpy, param = get_data_loader(params.batch_size, param, 'kddcup2015')
     else:
         pass
 
@@ -109,6 +136,11 @@ def main():
     # create optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=params.learning_rate, weight_decay=params.weight_decay)
 
+    # wandb
+    if model_params['use_wandb']:
+        init_wandb('WDAPM', 'Zikai Li', model_params, '34505f6e3ffacfbcb4aa26f7af20171b3c31b63a')
+        wandb.watch(model, log='all')
+
     # best result
     best_epoch = 0
     best_valid_rmse = best_valid_df = best_valid_MAE = 1e9
@@ -123,6 +155,8 @@ def main():
         valid_rmse, valid_df, valid_MAE = run(epoch=-1, dataset=valid_set, model=model, optimizer=optimizer,
                                               device=device, model_name=model_name, run_type='valid', loss_func=None,
                                               write_file=f, model_params=model_params)
+        if model_params['use_wandb']:
+            wandb.log({'Valid rmse': valid_rmse, 'valid df': valid_df, 'valid MAE': valid_MAE})
         print(
             'epoch: %.4f\n  valid_rmse %.4f  valid_df %.4f  valid_MAE %.4f' % (i + 1, valid_rmse, valid_df, valid_MAE))
         if valid_rmse < best_valid_rmse:
@@ -131,6 +165,8 @@ def main():
             test_rmse, test_df, test_MAE = run(epoch=-1, dataset=test_set, model=model, optimizer=optimizer,
                                                device=device, model_name=model_name, run_type='test', loss_func=None,
                                                write_file=f, model_params=model_params)
+            if model_params['use_wandb']:
+                wandb.log({'test rmse': test_rmse, 'test df': test_df, 'test MAE': test_MAE})
             print('  test_rmse %.4f  test_df %.4f  test_MAE %.4f' % (test_rmse, test_df, test_MAE))
             best_rmse, best_df, best_MAE = test_rmse, test_df, test_MAE
 

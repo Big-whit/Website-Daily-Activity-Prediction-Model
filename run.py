@@ -1,10 +1,8 @@
 import numpy as np
 import torch
 import pandas as pd
+import wandb
 import torch.nn.functional as F
-from sklearn import metrics
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import roc_auc_score
 
 """
 cal_eval_result() function's purpose:
@@ -104,7 +102,6 @@ def run(epoch,
     y_truths_2 = None
     y_preds_2 = None
     all_loss = 0
-    dataset_user_num = 0
 
     if run_type == 'train':
         model.train()
@@ -112,7 +109,6 @@ def run(epoch,
         model.eval()
 
     for index, value in enumerate(dataset):
-        dataset_user_num += len(value[0])
         user_id, ui, uv, ai, av, y, time = value
         user_id = user_id.to(device)
         ui = ui.to(device)
@@ -182,9 +178,10 @@ def run(epoch,
         predict_results = user_ids, y_preds_1, y_truths_1
     else:
         predict_results = user_ids, y_preds_1, y_truths_1, y_preds_2, y_truths_2
-        # Save result
-        if run_type == 'test':
-            save_path = './log/result_predict/'
-            cal_save_result(model_params, model_name, predict_results, save_path)
+
+    # Save result
+    if run_type == 'test' and model_params['save_result']:
+        save_path = './log/result_predict/'
+        cal_save_result(model_params, model_name, predict_results, save_path)
 
     return cal_eval_result(all_loss, predict_results, run_type, model_name, write_file)
